@@ -30,7 +30,7 @@ export default function Dashboard() {
                 Start Practicing Now
               </button>
             </Link>
-            <Link href="/movies">
+            <Link href="/api-demo">
               <button className="border-2 border-blue-600 text-blue-600 hover:bg-blue-50 px-8 py-4 rounded-lg font-semibold text-lg transition-colors">
                 View API Demo
               </button>
