@@ -2,31 +2,33 @@
 
 import { useState } from 'react';
 import LearningLayout from '@/components/common/LearningLayout';
-import InteractiveLearningView from '@/components/problem-solving/InteractiveLearningView';
+import VideoLearningView from '@/components/learning/VideoLearningView';
 import { learningContent } from '@/data/learningContent';
 
-export default function PracticePage() {
-  const [currentStep, setCurrentStep] = useState(1);
+export default function LearnPage() {
+  const [selectedVideoId, setSelectedVideoId] = useState('video-1');
   const [isLightMode, setIsLightMode] = useState(false);
 
   const breadcrumbs = [
-    { label: 'Practice', href: '/practice' },
-    { label: 'Problem Solving', href: '/practice' },
-    { label: 'SQL Relationships Challenge' }
+    { label: 'Learn', href: '/learn' },
+    { label: 'Courses', href: '/courses' },
+    { label: 'SQL Database Relationships' }
   ];
 
   return (
     <LearningLayout
       breadcrumbs={breadcrumbs}
       showLearningNavigation={true}
-      dailyXP={50}
+      dailyXP={25}
       isLightMode={isLightMode}
       onToggleLightMode={() => setIsLightMode(!isLightMode)}
     >
       {/* Content */}
       <div className="h-[calc(100vh-67px)]">
-        <InteractiveLearningView
-          lessons={learningContent.interactiveLessons}
+        <VideoLearningView
+          videos={learningContent.videos}
+          selectedVideoId={selectedVideoId}
+          onVideoChange={setSelectedVideoId}
         />
       </div>
     </LearningLayout>
