@@ -74,7 +74,7 @@ export default function CodeEditor({
           <div className="w-3 h-3 bg-yellow-500 rounded-full"></div>
           <div className="w-3 h-3 bg-green-500 rounded-full"></div> */}
 
-            <Image src="/assets/code.svg" alt="Code Icon" className="w-5 h-5" />
+            <Image src="/code.svg" alt="Code Icon" width={20} height={20} className="w-5 h-5" />
             <span className="text-white">Code</span>
         </div>
         
