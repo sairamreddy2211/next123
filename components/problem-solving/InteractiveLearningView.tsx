@@ -27,7 +27,7 @@ export default function InteractiveLearningView() {
   const [testResults, setTestResults] = useState<TestResult[]>([]);
   const [isRunning, setIsRunning] = useState(false);
   const [showHints, setShowHints] = useState(false);
-  const [panelWidth, setPanelWidth] = useState(50); // Percentage for left panel
+  const [panelWidth, setPanelWidth] = useState(45); // Percentage for left panel
 
   // Simulate fetching the problem JSON by id
   useEffect(() => {
@@ -66,7 +66,7 @@ export default function InteractiveLearningView() {
         starterCode: {
           javascript: "",
           python: "",
-          sql: "-- Write your SQL query here\nSELECT"
+          sql: "-- Write your SQL query here\nselect * from employees;\nselect * from sales;"
         }
       };
       setProblem(data);
@@ -169,10 +169,10 @@ export default function InteractiveLearningView() {
               </div>
               <div className="flex flex-wrap gap-2 mt-1">
                 {problem.tags && problem.tags.map((tag: string, idx: number) => (
-                  <span key={idx} className="bg-blue-700 text-xs px-2 py-1 rounded">{tag}</span>
+                  <span key={idx} className="bg-blue-700 text-xs text-white px-2 py-1 rounded">{tag}</span>
                 ))}
                 {problem.companies && problem.companies.map((company: string, idx: number) => (
-                  <span key={company} className="bg-green-700 text-xs px-2 py-1 rounded">{company}</span>
+                  <span key={company} className="bg-green-700 text-xs text-white px-2 py-1 rounded">{company}</span>
                 ))}
               </div>
             </div>
