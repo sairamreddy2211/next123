@@ -4,6 +4,9 @@ import { useState, useRef } from "react";
 import ReactMarkdown from 'react-markdown';
 import remarkGfm from 'remark-gfm';
 import dynamic from "next/dynamic";
+// Dynamically import Markdown Editor (react-markdown-editor-lite)
+const MdEditor = dynamic(() => import('react-markdown-editor-lite'), { ssr: false });
+import 'react-markdown-editor-lite/lib/index.css';
 import { useEffect } from 'react';
 // Import the QuestionView component from the problem-solving folder
 // Table Markdown Generator Tool
@@ -329,12 +332,16 @@ export default function AdminProblemEditorPage() {
             {/* Description */}
             <div className="space-y-2 bg-[#262626] p-4 rounded-lg border border-[#222222]">
               <label className="block mb-1 font-semibold">Description</label>
-              <textarea
-                className="w-full min-h-[100px] bg-[#333333] border border-[#222222] rounded px-3 py-2 text-white"
-                placeholder="Problem description (supports markdown)"
-                value={problem.description}
-                onChange={(e) => handleChange("description", e.target.value)}
-              />
+              <div className="bg-[#333333] border border-[#222222] rounded">
+                <MdEditor
+                  value={problem.description}
+                  style={{ height: '300px', background: 'transparent', color: 'white' }}
+                  renderHTML={text => <ReactMarkdown remarkPlugins={[remarkGfm]}>{text}</ReactMarkdown>}
+                  onChange={({ text }) => handleChange('description', text)}
+                  config={{ view: { menu: true, md: true, html: false }, canView: { menu: true, md: true, html: false, fullScreen: true, hideMenu: true } }}
+                  className="bg-transparent text-white"
+                />
+              </div>
             </div>
             {/* Examples */}
             <div className="space-y-2 bg-[#262626] p-4 rounded-lg border border-[#222222]">

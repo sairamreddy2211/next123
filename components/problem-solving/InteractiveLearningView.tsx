@@ -45,15 +45,17 @@ export function QuestionView({ problem, showHints, setShowHints }: {
       </div>
       {/* Problem Description (Markdown) */}
       <div>
-        <div className="mt-5 prose prose-invert max-w-none text-white leading-relaxed">
+        <div className="mt-5 prose prose-invert max-w-none text-white">
           <ReactMarkdown 
-            remarkPlugins={[remarkGfm]}
+            remarkPlugins={[[remarkGfm, { singleTilde: false }]]}
             components={{
               table: ({node, ...props}) => <table className="min-w-full border border-gray-600 my-2 text-xs" {...props} />, 
               th: ({node, ...props}) => <th className="border border-gray-600 px-2 py-1 bg-gray-800 text-gray-200 text-xs" {...props} />, 
               td: ({node, ...props}) => <td className="border border-gray-600 px-2 py-1 text-gray-300 text-xs" {...props} />, 
               tr: ({node, ...props}) => <tr {...props} />
             }}
+            skipHtml={false}
+            unwrapDisallowed={false}
           >
             {problem.description}
           </ReactMarkdown>
