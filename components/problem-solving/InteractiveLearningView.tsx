@@ -1,6 +1,158 @@
 "use client";
 
 import { useState, useEffect } from 'react';
+// Reusable QuestionView component for rendering the question/left panel
+export function QuestionView({ problem, showHints, setShowHints }: {
+  problem: any;
+  showHints: boolean;
+  setShowHints: (v: boolean) => void;
+}) {
+  const { Target, Lightbulb, ChevronUp, ChevronDown } = require('lucide-react');
+  const getDifficultyColor = (difficulty: string) => {
+    switch (difficulty) {
+      case 'beginner':
+        return 'text-green-400 bg-green-500/20 border-green-500/30';
+      case 'intermediate':
+        return 'text-orange-400 bg-orange-500/20 border-orange-500/30';
+      case 'advanced':
+        return 'text-red-400 bg-red-500/20 border-red-500/30';
+      default:
+        return 'text-gray-400 bg-gray-500/20 border-gray-500/30';
+    }
+  };
+  return (
+    <div className="space-y-6">
+      {/* Problem Title and Badges */}
+      <div className="mb-2">
+        <div className="flex items-center gap-3 mb-2">
+          <h2 className="text-xl font-bold text-white">{problem.title}</h2>
+          <span className={`inline-block px-2 py-1 rounded text-xs font-semibold border ${getDifficultyColor(problem.difficulty)}`}>{problem.difficulty.charAt(0).toUpperCase() + problem.difficulty.slice(1)}</span>
+          {problem.tags && problem.tags.length > 0 && (
+            <span className="inline-block bg-gray-700 text-xs px-2 py-1 rounded text-gray-200">Topics</span>
+          )}
+          {problem.companies && problem.companies.length > 0 && (
+            <span className="inline-block bg-yellow-900 text-xs px-2 py-1 rounded text-yellow-300">Companies</span>
+          )}
+        </div>
+        <div className="flex flex-wrap gap-2 mt-1">
+          {problem.tags && problem.tags.map((tag: string, idx: number) => (
+            <span key={idx} className="bg-blue-700 text-xs text-white px-2 py-1 rounded">{tag}</span>
+          ))}
+          {problem.companies && problem.companies.map((company: string, idx: number) => (
+            <span key={company} className="bg-green-700 text-xs text-white px-2 py-1 rounded">{company}</span>
+          ))}
+        </div>
+      </div>
+      {/* Problem Description (Markdown) */}
+      <div>
+        <div className="mt-5 prose prose-invert max-w-none text-white leading-relaxed">
+          <ReactMarkdown 
+            remarkPlugins={[remarkGfm]}
+            components={{
+              table: ({node, ...props}) => <table className="min-w-full border border-gray-600 my-2 text-xs" {...props} />, 
+              th: ({node, ...props}) => <th className="border border-gray-600 px-2 py-1 bg-gray-800 text-gray-200 text-xs" {...props} />, 
+              td: ({node, ...props}) => <td className="border border-gray-600 px-2 py-1 text-gray-300 text-xs" {...props} />, 
+              tr: ({node, ...props}) => <tr {...props} />
+            }}
+          >
+            {problem.description}
+          </ReactMarkdown>
+        </div>
+      </div>
+      {/* Examples */}
+      {problem.examples && problem.examples.length > 0 && (
+        <div>
+          {/* <h4 className="text-md font-semibold text-white mb-3 p-3 rounded-lg" style={{ backgroundColor: '#333333' }}>Examples</h4> */}
+          <div className="space-y-2">
+            {problem.examples.map((example: any, index: number) => (
+              <div key={index} className="border rounded-lg" style={{ borderColor: '#222222' }}>
+                <div className="font-medium text-sm text-gray-400 mb-2">Example {index + 1}:</div>
+                <div className="space-y-2">
+                  <div>
+                    <span className="font-medium text-xs text-gray-300">Input:</span>
+                    <pre
+                      className="mt-1 text-xs border p-2 rounded font-mono text-gray-300 overflow-x-auto whitespace-pre-wrap break-words max-w-full"
+                      style={{ backgroundColor: '#262626', borderColor: '#222222', fontSize: '12px', wordBreak: 'break-all', maxWidth: '100%' }}
+                    >
+                      {example.input.length > 300
+                        ? example.input.slice(0, 300) + '...'
+                        : example.input}
+                    </pre>
+                  </div>
+                  <div>
+                    <span className="font-medium text-xs text-gray-300">Output:</span>
+                    <div className="mt-1 overflow-x-auto max-w-full">
+                      <ReactMarkdown 
+                        remarkPlugins={[remarkGfm]}
+                        components={{
+                          table: ({node, ...props}) => <table className="min-w-full border border-gray-600 my-2 text-xs" style={{maxWidth:'100%'}} {...props} />, 
+                          th: ({node, ...props}) => <th className="border border-gray-600 px-2 py-1 bg-gray-800 text-gray-200 text-xs" style={{maxWidth:'200px',overflow:'hidden',textOverflow:'ellipsis',whiteSpace:'nowrap'}} {...props} />, 
+                          td: ({node, ...props}) => <td className="border border-gray-600 px-2 py-1 text-gray-300 text-xs" style={{maxWidth:'200px',overflow:'hidden',textOverflow:'ellipsis',whiteSpace:'nowrap'}} {...props} />, 
+                          tr: ({node, ...props}) => <tr {...props} />
+                        }}
+                      >
+                        {example.output}
+                      </ReactMarkdown>
+                    </div>
+                  </div>
+                  {example.explanation && (
+                    <div>
+                      <span className="font-medium text-sm text-gray-300">Explanation:</span>
+                      <div className="mt-1 text-sm text-gray-400">{example.explanation}</div>
+                    </div>
+                  )}
+                </div>
+              </div>
+            ))}
+          </div>
+        </div>
+      )}
+      {/* Constraints */}
+      {problem.constraints && problem.constraints.length > 0 && (
+        <div>
+          <h4 className="text-md font-semibold text-white mb-3 p-3 rounded-lg" style={{ backgroundColor: '#333333' }}>Constraints</h4>
+          <ul className="space-y-2">
+            {problem.constraints.map((constraint: string, index: number) => (
+              <li key={index} className="flex items-start space-x-2">
+                <Target className="w-4 h-4 text-gray-400 mt-0.5 flex-shrink-0" />
+                <span className="text-gray-300 text-sm">{constraint}</span>
+              </li>
+            ))}
+          </ul>
+        </div>
+      )}
+      {/* Hints (static for now) */}
+      <div>
+        <button
+          onClick={() => setShowHints(!showHints)}
+          className="flex items-center space-x-2 text-sm font-medium text-gray-400 hover:text-gray-300 transition-colors"
+        >
+          <Lightbulb className="w-4 h-4" />
+          <span>{showHints ? 'Hide Hints' : 'Show Hints'}</span>
+          {showHints ? (
+            <ChevronUp className="w-4 h-4" />
+          ) : (
+            <ChevronDown className="w-4 h-4" />
+          )}
+        </button>
+        {showHints && (
+          <div className="mt-3 p-4 border rounded-lg" style={{ backgroundColor: '#333333', borderColor: '#222222' }}>
+            <div className="space-y-2">
+              <div className="flex items-center space-x-2">
+                <Lightbulb className="w-4 h-4 text-yellow-500" />
+                <span className="text-sm text-gray-300">Think about using the SELECT statement with appropriate clauses.</span>
+              </div>
+              <div className="flex items-center space-x-2">
+                <Lightbulb className="w-4 h-4 text-yellow-500" />
+                <span className="text-sm text-gray-300">Remember to specify the table name after FROM.</span>
+              </div>
+            </div>
+          </div>
+        )}
+      </div>
+    </div>
+  );
+}
 import ReactMarkdown from 'react-markdown';
 import remarkGfm from 'remark-gfm';
 import { ChevronDown, ChevronUp, Target, Lightbulb } from 'lucide-react';
@@ -147,143 +299,13 @@ export default function InteractiveLearningView() {
 
   return (
     <div className="h-full flex bg-black">
-      {/* Left Panel - Problem Description */}
+      {/* Left Panel - Question View */}
       <div 
         className="flex flex-col border-r border-gray-700"
         style={{ width: `${panelWidth}%`, backgroundColor: '#262626' }}
       >
-        {/* Problem Content */}
         <div className="flex-1 overflow-y-auto p-6">
-          <div className="space-y-6">
-            {/* Problem Title and Badges */}
-            <div className="mb-2">
-              <div className="flex items-center gap-3 mb-2">
-                <h2 className="text-2xl font-bold text-white">{problem.title}</h2>
-                <span className={`inline-block px-2 py-1 rounded text-xs font-semibold border ${getDifficultyColor(problem.difficulty)}`}>{problem.difficulty.charAt(0).toUpperCase() + problem.difficulty.slice(1)}</span>
-                {problem.tags && problem.tags.length > 0 && (
-                  <span className="inline-block bg-gray-700 text-xs px-2 py-1 rounded text-gray-200">Topics</span>
-                )}
-                {problem.companies && problem.companies.length > 0 && (
-                  <span className="inline-block bg-yellow-900 text-xs px-2 py-1 rounded text-yellow-300">Companies</span>
-                )}
-              </div>
-              <div className="flex flex-wrap gap-2 mt-1">
-                {problem.tags && problem.tags.map((tag: string, idx: number) => (
-                  <span key={idx} className="bg-blue-700 text-xs text-white px-2 py-1 rounded">{tag}</span>
-                ))}
-                {problem.companies && problem.companies.map((company: string, idx: number) => (
-                  <span key={company} className="bg-green-700 text-xs text-white px-2 py-1 rounded">{company}</span>
-                ))}
-              </div>
-            </div>
-            {/* Problem Description (Markdown) */}
-            <div>
-              <div className="prose prose-invert max-w-none text-gray-300 leading-relaxed bg-[#222222] p-4 rounded-lg border border-[#333333]">
-                <ReactMarkdown 
-                  remarkPlugins={[remarkGfm]}
-                  components={{
-                    table: ({node, ...props}) => <table className="min-w-full border border-gray-600 my-2 text-xs" {...props} />, 
-                    th: ({node, ...props}) => <th className="border border-gray-600 px-2 py-1 bg-gray-800 text-gray-200 text-xs" {...props} />, 
-                    td: ({node, ...props}) => <td className="border border-gray-600 px-2 py-1 text-gray-300 text-xs" {...props} />, 
-                    tr: ({node, ...props}) => <tr {...props} />
-                  }}
-                >
-                  {problem.description}
-                </ReactMarkdown>
-              </div>
-            </div>
-            {/* Examples */}
-            {problem.examples && problem.examples.length > 0 && (
-              <div>
-                <h4 className="text-md font-semibold text-white mb-3 p-3 rounded-lg" style={{ backgroundColor: '#333333' }}>Examples</h4>
-                <div className="space-y-4">
-                  {problem.examples.map((example: any, index: number) => (
-                    <div key={index} className="border rounded-lg p-4" style={{ backgroundColor: '#333333', borderColor: '#222222' }}>
-                      <div className="font-medium text-sm text-gray-400 mb-2">Example {index + 1}:</div>
-                      <div className="space-y-2">
-                        <div>
-                          <span className="font-medium text-xs text-gray-300">Input:</span>
-                          <pre
-                            className="mt-1 text-xs border p-2 rounded font-mono text-gray-300 overflow-x-auto whitespace-pre-wrap break-words max-w-full"
-                            style={{ backgroundColor: '#262626', borderColor: '#222222', fontSize: '12px', wordBreak: 'break-all', maxWidth: '100%' }}
-                          >
-                            {example.input.length > 300
-                              ? example.input.slice(0, 300) + '...'
-                              : example.input}
-                          </pre>
-                        </div>
-                        <div>
-                          <span className="font-medium text-xs text-gray-300">Output:</span>
-                          <div className="mt-1 overflow-x-auto max-w-full">
-                            <ReactMarkdown 
-                              remarkPlugins={[remarkGfm]}
-                              components={{
-                                table: ({node, ...props}) => <table className="min-w-full border border-gray-600 my-2 text-xs" style={{maxWidth:'100%'}} {...props} />,
-                                th: ({node, ...props}) => <th className="border border-gray-600 px-2 py-1 bg-gray-800 text-gray-200 text-xs" style={{maxWidth:'200px',overflow:'hidden',textOverflow:'ellipsis',whiteSpace:'nowrap'}} {...props} />,
-                                td: ({node, ...props}) => <td className="border border-gray-600 px-2 py-1 text-gray-300 text-xs" style={{maxWidth:'200px',overflow:'hidden',textOverflow:'ellipsis',whiteSpace:'nowrap'}} {...props} />,
-                                tr: ({node, ...props}) => <tr {...props} />
-                              }}
-                            >
-                              {example.output}
-                            </ReactMarkdown>
-                          </div>
-                        </div>
-                        {example.explanation && (
-                          <div>
-                            <span className="font-medium text-sm text-gray-300">Explanation:</span>
-                            <div className="mt-1 text-sm text-gray-400">{example.explanation}</div>
-                          </div>
-                        )}
-                      </div>
-                    </div>
-                  ))}
-                </div>
-              </div>
-            )}
-            {/* Constraints */}
-            {problem.constraints && problem.constraints.length > 0 && (
-              <div>
-                <h4 className="text-md font-semibold text-white mb-3 p-3 rounded-lg" style={{ backgroundColor: '#333333' }}>Constraints</h4>
-                <ul className="space-y-2">
-                  {problem.constraints.map((constraint: string, index: number) => (
-                    <li key={index} className="flex items-start space-x-2">
-                      <Target className="w-4 h-4 text-gray-400 mt-0.5 flex-shrink-0" />
-                      <span className="text-gray-300 text-sm">{constraint}</span>
-                    </li>
-                  ))}
-                </ul>
-              </div>
-            )}
-            {/* Hints (static for now) */}
-            <div>
-              <button
-                onClick={() => setShowHints(!showHints)}
-                className="flex items-center space-x-2 text-sm font-medium text-gray-400 hover:text-gray-300 transition-colors"
-              >
-                <Lightbulb className="w-4 h-4" />
-                <span>{showHints ? 'Hide Hints' : 'Show Hints'}</span>
-                {showHints ? (
-                  <ChevronUp className="w-4 h-4" />
-                ) : (
-                  <ChevronDown className="w-4 h-4" />
-                )}
-              </button>
-              {showHints && (
-                <div className="mt-3 p-4 border rounded-lg" style={{ backgroundColor: '#333333', borderColor: '#222222' }}>
-                  <div className="space-y-2">
-                    <div className="flex items-center space-x-2">
-                      <Lightbulb className="w-4 h-4 text-yellow-500" />
-                      <span className="text-sm text-gray-300">Think about using the SELECT statement with appropriate clauses.</span>
-                    </div>
-                    <div className="flex items-center space-x-2">
-                      <Lightbulb className="w-4 h-4 text-yellow-500" />
-                      <span className="text-sm text-gray-300">Remember to specify the table name after FROM.</span>
-                    </div>
-                  </div>
-                </div>
-              )}
-            </div>
-          </div>
+          <QuestionView problem={problem} showHints={showHints} setShowHints={setShowHints} />
         </div>
       </div>
       {/* Resizer */}
