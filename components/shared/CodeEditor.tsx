@@ -35,19 +35,19 @@ export default function CodeEditor({
   const [code, setCode] = useState(defaultValue);
 
   const handleEditorChange = (value: string | undefined) => {
-    const newCode = value || '';
+    const newCode = value ?? '';
     setCode(newCode);
-    onChange?.(newCode);
+    if (onChange) onChange(newCode);
   };
 
   const handleRun = () => {
-    onRun?.(code);
+    if (onRun) onRun(code);
   };
 
   const handleReset = () => {
     setCode(defaultValue);
-    onChange?.(defaultValue);
-    onReset?.();
+    if (onChange) onChange(defaultValue);
+    if (onReset) onReset();
   };
 
   const editorOptions = {

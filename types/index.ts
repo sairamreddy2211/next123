@@ -109,6 +109,8 @@ export interface InteractiveLesson {
   title: string;
   description: string;
   difficulty: 'beginner' | 'intermediate' | 'advanced';
+  tags?: string[];
+  companies?: string[];
   category: string;
   content: string;
   problem?: {
@@ -116,6 +118,7 @@ export interface InteractiveLesson {
     examples: {
       input: string;
       output: string;
+      explanation?: string;
     }[];
     constraints: string[];
     difficulty: 'beginner' | 'intermediate' | 'advanced';
