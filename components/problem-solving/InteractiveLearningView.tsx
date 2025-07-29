@@ -1,6 +1,8 @@
 "use client";
-
+import remarkBreaks from 'remark-breaks';
 import { useState, useEffect } from 'react';
+import rehypeRaw from 'rehype-raw';
+import '../common/markdownStyles.css';
 // Reusable QuestionView component for rendering the question/left panel
 export function QuestionView({ problem, showHints, setShowHints }: {
   problem: any;
@@ -45,9 +47,10 @@ export function QuestionView({ problem, showHints, setShowHints }: {
       </div>
       {/* Problem Description (Markdown) */}
       <div>
-        <div className="mt-5 prose prose-invert max-w-none text-white">
+        <div className="mt-5 prose-markdown prose-invert max-w-none text-white">
           <ReactMarkdown 
-            remarkPlugins={[[remarkGfm, { singleTilde: false }]]}
+            rehypePlugins={[rehypeRaw]}
+            remarkPlugins={[[remarkGfm, { singleTilde: false }], remarkBreaks]}
             components={{
               table: ({node, ...props}) => <table className="min-w-full border border-gray-600 my-2 text-xs" {...props} />, 
               th: ({node, ...props}) => <th className="border border-gray-600 px-2 py-1 bg-gray-800 text-gray-200 text-xs" {...props} />, 
@@ -84,8 +87,8 @@ export function QuestionView({ problem, showHints, setShowHints }: {
                   <div>
                     <span className="font-medium text-xs text-gray-300">Output:</span>
                     <div className="mt-1 overflow-x-auto max-w-full">
-                      <ReactMarkdown 
-                        remarkPlugins={[remarkGfm]}
+                       <ReactMarkdown
+                        remarkPlugins={[[remarkGfm, { singleTilde: false }], remarkBreaks]}
                         components={{
                           table: ({node, ...props}) => <table className="min-w-full border border-gray-600 my-2 text-xs" style={{maxWidth:'100%'}} {...props} />, 
                           th: ({node, ...props}) => <th className="border border-gray-600 px-2 py-1 bg-gray-800 text-gray-200 text-xs" style={{maxWidth:'200px',overflow:'hidden',textOverflow:'ellipsis',whiteSpace:'nowrap'}} {...props} />, 
