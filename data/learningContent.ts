@@ -57,28 +57,10 @@ export const learningContent: LearningContent = {
       title: 'Introduction to Databases',
       description: 'Learn the fundamentals of database design and SQL.',
       duration: '15 min',
-      videoUrl: 'https://example.com/video1',
+      videoUrl: 'https://www.youtube.com/embed/p2zMXSXhZ9M',
       difficulty: 'beginner',
       category: 'databases'
     },
-    {
-      id: 'video-2', 
-      title: 'Advanced SQL Queries',
-      description: 'Master complex SQL operations and joins.',
-      duration: '25 min',
-      videoUrl: 'https://example.com/video2',
-      difficulty: 'intermediate',
-      category: 'databases'
-    },
-    {
-      id: 'video-3',
-      title: 'Database Optimization',
-      description: 'Techniques for improving database performance.',
-      duration: '20 min',
-      videoUrl: 'https://example.com/video3',
-      difficulty: 'advanced',
-      category: 'databases'
-    }
   ],
   interactiveLessons: [
     {

@@ -26,6 +26,7 @@ export default function LearnPage() {
       {/* Content */}
       <div className="h-[calc(100vh-67px)]">
         <VideoLearningView
+          selectedVideoId="video-1"
           videos={learningContent.videos}
           selectedVideoId={selectedVideoId}
           onVideoChange={setSelectedVideoId}
