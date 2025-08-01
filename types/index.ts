@@ -102,6 +102,8 @@ export interface VideoContent {
   url?: string;
   presenter?: string;
   presenterTitle?: string;
+  thumbnail?: string;
+  transcript?: string;
 }
 
 export interface InteractiveLesson {

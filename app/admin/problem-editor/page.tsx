@@ -206,11 +206,28 @@ export default function AdminProblemEditorPage() {
   type LangType = 'python' | 'sql' | 'postgres';
   const [selectedLang, setSelectedLang] = useState<LangType>('python');
   const [showHints, setShowHints] = useState(false);
+  const [viewType, setViewType] = useState<'leetcode' | 'video'>('leetcode');
   // Controlled code state for each language
   const [codeState, setCodeState] = useState<{ [K in LangType]: string }>({
     python: problem.starterCode.python || '',
     sql: problem.starterCode.sql || '',
     postgres: problem.starterCode.sql || '',
+  });
+
+  // Video form state
+  const [videoData, setVideoData] = useState({
+    id: '',
+    title: '',
+    description: '',
+    duration: '',
+    videoUrl: '',
+    difficulty: 'beginner',
+    category: '',
+    presenter: '',
+    presenterTitle: '',
+    type: 'youtube',
+    thumbnail: '',
+    transcript: '',
   });
 
   const handleChange = (field: keyof ProblemData, value: any) => {
@@ -226,257 +243,376 @@ export default function AdminProblemEditorPage() {
     }
   };
 
+  const handleVideoChange = (field: string, value: any) => {
+    setVideoData((prev) => ({ ...prev, [field]: value }));
+  };
+
   return (
     <div className="min-h-screen bg-black text-white p-0">
       <div className="flex h-screen">
-        {/* Left Panel: Live Preview */}
-        <div className="w-1/2 border-r border-gray-800 bg-[#181818] overflow-y-auto p-6">
-          <QuestionView problem={problem} showHints={showHints} setShowHints={setShowHints} />
-        </div>
+        {/* Left Panel: Live Preview (only for leetcode view) */}
+        {viewType === 'leetcode' && (
+          <div className="w-1/2 border-r border-gray-800 bg-[#181818] overflow-y-auto p-6">
+            <QuestionView problem={problem} showHints={showHints} setShowHints={setShowHints} />
+          </div>
+        )}
         {/* Right Panel: Form */}
-        <div className="w-1/2 overflow-y-auto p-8">
+        <div className={viewType === 'leetcode' ? "w-1/2 overflow-y-auto p-8" : "w-full overflow-y-auto p-8"}>
           <div className="max-w-3xl mx-auto space-y-8">
-            {/* Table Markdown Generator Tool */}
-            <TableMarkdownGenerator />
-            <h1 className="text-2xl font-bold mb-4">Admin Problem Editor</h1>
-            {/* Title, Category, Content, Tags, Companies & Difficulty */}
-            <div className="space-y-4 bg-[#262626] p-4 rounded-lg border border-[#222222]">
-              <input
-                className="w-full bg-[#333333] border border-[#222222] rounded px-3 py-2 text-white mb-2"
-                placeholder="Problem Title"
-                value={problem.title}
-                onChange={(e) => handleChange("title", e.target.value)}
-              />
-              <input
-                className="w-full bg-[#333333] border border-[#222222] rounded px-3 py-2 text-white mb-2"
-                placeholder="Category (optional)"
-                value={problem.category}
-                onChange={(e) => handleChange("category", e.target.value)}
-              />
-              <input
-                className="w-full bg-[#333333] border border-[#222222] rounded px-3 py-2 text-white mb-2"
-                placeholder="Content (optional)"
-                value={problem.content}
-                onChange={(e) => handleChange("content", e.target.value)}
-              />
-              {/* Tags */}
-              <div>
-                <label className="block mb-1 font-semibold">Tags</label>
-                <div className="flex flex-wrap gap-2 mb-2">
-                  {problem.tags.map((tag, idx) => (
-                    <span key={idx} className="bg-blue-700 text-xs px-2 py-1 rounded flex items-center">
-                      {tag}
-                      <button
-                        className="ml-1 text-red-300 hover:text-red-500"
-                        type="button"
-                        onClick={() => {
-                          const updated = problem.tags.filter((_, i) => i !== idx);
-                          handleChange("tags", updated);
-                        }}
-                      >×</button>
-                    </span>
-                  ))}
-                </div>
-                <input
-                  className="w-full bg-[#333333] border border-[#222222] rounded px-3 py-2 text-white"
-                  placeholder="Add tag and press Enter"
-                  onKeyDown={e => {
-                    if (e.key === 'Enter' && e.currentTarget.value.trim()) {
-                      handleChange("tags", [...problem.tags, e.currentTarget.value.trim()]);
-                      e.currentTarget.value = '';
-                      e.preventDefault();
-                    }
-                  }}
-                />
-              </div>
-              {/* Companies */}
-              <div>
-                <label className="block mb-1 font-semibold">Companies</label>
-                <div className="flex flex-wrap gap-2 mb-2">
-                  {problem.companies.map((company, idx) => (
-                    <span key={idx} className="bg-green-700 text-xs px-2 py-1 rounded flex items-center">
-                      {company}
-                      <button
-                        className="ml-1 text-red-300 hover:text-red-500"
-                        type="button"
-                        onClick={() => {
-                          const updated = problem.companies.filter((_, i) => i !== idx);
-                          handleChange("companies", updated);
-                        }}
-                      >×</button>
-                    </span>
-                  ))}
-                </div>
-                <input
-                  className="w-full bg-[#333333] border border-[#222222] rounded px-3 py-2 text-white"
-                  placeholder="Add company and press Enter"
-                  onKeyDown={e => {
-                    if (e.key === 'Enter' && e.currentTarget.value.trim()) {
-                      handleChange("companies", [...problem.companies, e.currentTarget.value.trim()]);
-                      e.currentTarget.value = '';
-                      e.preventDefault();
-                    }
-                  }}
-                />
-              </div>
+            {/* View Type Dropdown */}
+            <div className="mb-4">
+              <label className="block mb-1 font-semibold">View Type</label>
               <select
                 className="bg-[#333333] border border-[#222222] rounded px-3 py-2 text-white"
-                value={problem.difficulty}
-                onChange={(e) => handleChange("difficulty", e.target.value)}
+                value={viewType}
+                onChange={e => setViewType(e.target.value as 'leetcode' | 'video')}
               >
-                <option value="beginner">Beginner</option>
-                <option value="intermediate">Intermediate</option>
-                <option value="advanced">Advanced</option>
+                <option value="leetcode">LeetCode (Problem)</option>
+                <option value="video">Video</option>
               </select>
             </div>
-            {/* Description */}
-            <div className="space-y-2 bg-[#262626] p-4 rounded-lg border border-[#222222]">
-              <label className="block mb-1 font-semibold">Description</label>
-              <div className="bg-[#333333] border border-[#222222] rounded">
-                <MdEditor
-                  value={problem.description}
-                  style={{ height: '300px', background: 'transparent', color: 'white' }}
-                  renderHTML={text => <ReactMarkdown remarkPlugins={[remarkGfm]}>{text}</ReactMarkdown>}
-                  onChange={({ text }) => handleChange('description', text)}
-                  config={{ view: { menu: true, md: true, html: false }, canView: { menu: true, md: true, html: false, fullScreen: true, hideMenu: true } }}
-                  className="bg-transparent text-white"
-                />
-              </div>
-            </div>
-            {/* Examples */}
-            <div className="space-y-2 bg-[#262626] p-4 rounded-lg border border-[#222222]">
-              <label className="block mb-1 font-semibold">Examples</label>
-              {problem.examples.map((ex, idx) => (
-                <div key={idx} className="mb-2 p-2 rounded bg-[#333333] border border-[#222222]">
+            {/* Table Markdown Generator Tool (only for leetcode) */}
+            {/* {viewType === 'leetcode' && <TableMarkdownGenerator />} */}
+            <h1 className="text-2xl font-bold mb-4">Admin {viewType === 'leetcode' ? 'Problem Editor' : 'Video Editor'}</h1>
+            {/* LeetCode Problem Form */}
+            {viewType === 'leetcode' && (
+              <>
+                {/* ...existing leetcode form code... */}
+                {/* Title, Category, Content, Tags, Companies & Difficulty */}
+                <div className="space-y-4 bg-[#262626] p-4 rounded-lg border border-[#222222]">
                   <input
-                    className="w-full mb-1 bg-transparent border-b border-[#222222] text-white"
-                    placeholder="Input"
-                    value={ex.input}
-                    onChange={(e) => {
-                      const updated = [...problem.examples];
-                      updated[idx].input = e.target.value;
-                      handleChange("examples", updated);
-                    }}
+                    className="w-full bg-[#333333] border border-[#222222] rounded px-3 py-2 text-white mb-2"
+                    placeholder="Problem Title"
+                    value={problem.title}
+                    onChange={(e) => handleChange("title", e.target.value)}
                   />
                   <input
-                    className="w-full mb-1 bg-transparent border-b border-[#222222] text-white"
-                    placeholder="Output"
-                    value={ex.output}
-                    onChange={(e) => {
-                      const updated = [...problem.examples];
-                      updated[idx].output = e.target.value;
-                      handleChange("examples", updated);
-                    }}
+                    className="w-full bg-[#333333] border border-[#222222] rounded px-3 py-2 text-white mb-2"
+                    placeholder="Category (optional)"
+                    value={problem.category}
+                    onChange={(e) => handleChange("category", e.target.value)}
                   />
                   <input
-                    className="w-full bg-transparent border-b border-[#222222] text-white"
-                    placeholder="Explanation (optional)"
-                    value={ex.explanation}
-                    onChange={(e) => {
-                      const updated = [...problem.examples];
-                      updated[idx].explanation = e.target.value;
-                      handleChange("examples", updated);
-                    }}
+                    className="w-full bg-[#333333] border border-[#222222] rounded px-3 py-2 text-white mb-2"
+                    placeholder="Content (optional)"
+                    value={problem.content}
+                    onChange={(e) => handleChange("content", e.target.value)}
                   />
-                  <div className="flex justify-end mt-1">
-                    <button
-                      className="text-xs text-red-400 hover:underline"
-                      onClick={() => {
-                        const updated = problem.examples.filter((_, i) => i !== idx);
-                        handleChange("examples", updated);
+                  {/* Tags */}
+                  <div>
+                    <label className="block mb-1 font-semibold">Tags</label>
+                    <div className="flex flex-wrap gap-2 mb-2">
+                      {problem.tags.map((tag, idx) => (
+                        <span key={idx} className="bg-blue-700 text-xs px-2 py-1 rounded flex items-center">
+                          {tag}
+                          <button
+                            className="ml-1 text-red-300 hover:text-red-500"
+                            type="button"
+                            onClick={() => {
+                              const updated = problem.tags.filter((_, i) => i !== idx);
+                              handleChange("tags", updated);
+                            }}
+                          >×</button>
+                        </span>
+                      ))}
+                    </div>
+                    <input
+                      className="w-full bg-[#333333] border border-[#222222] rounded px-3 py-2 text-white"
+                      placeholder="Add tag and press Enter"
+                      onKeyDown={e => {
+                        if (e.key === 'Enter' && e.currentTarget.value.trim()) {
+                          handleChange("tags", [...problem.tags, e.currentTarget.value.trim()]);
+                          e.currentTarget.value = '';
+                          e.preventDefault();
+                        }
                       }}
-                      disabled={problem.examples.length === 1}
-                    >
-                      Remove
-                    </button>
+                    />
+                  </div>
+                  {/* Companies */}
+                  <div>
+                    <label className="block mb-1 font-semibold">Companies</label>
+                    <div className="flex flex-wrap gap-2 mb-2">
+                      {problem.companies.map((company, idx) => (
+                        <span key={idx} className="bg-green-700 text-xs px-2 py-1 rounded flex items-center">
+                          {company}
+                          <button
+                            className="ml-1 text-red-300 hover:text-red-500"
+                            type="button"
+                            onClick={() => {
+                              const updated = problem.companies.filter((_, i) => i !== idx);
+                              handleChange("companies", updated);
+                            }}
+                          >×</button>
+                        </span>
+                      ))}
+                    </div>
+                    <input
+                      className="w-full bg-[#333333] border border-[#222222] rounded px-3 py-2 text-white"
+                      placeholder="Add company and press Enter"
+                      onKeyDown={e => {
+                        if (e.key === 'Enter' && e.currentTarget.value.trim()) {
+                          handleChange("companies", [...problem.companies, e.currentTarget.value.trim()]);
+                          e.currentTarget.value = '';
+                          e.preventDefault();
+                        }
+                      }}
+                    />
+                  </div>
+                  <select
+                    className="bg-[#333333] border border-[#222222] rounded px-3 py-2 text-white"
+                    value={problem.difficulty}
+                    onChange={(e) => handleChange("difficulty", e.target.value)}
+                  >
+                    <option value="beginner">Beginner</option>
+                    <option value="intermediate">Intermediate</option>
+                    <option value="advanced">Advanced</option>
+                  </select>
+                </div>
+                {/* Description */}
+                <div className="space-y-2 bg-[#262626] p-4 rounded-lg border border-[#222222]">
+                  <label className="block mb-1 font-semibold">Description</label>
+                  <div className="bg-[#333333] border border-[#222222] rounded">
+                    <MdEditor
+                      value={problem.description}
+                      style={{ height: '300px', background: 'transparent', color: 'white' }}
+                      renderHTML={text => <ReactMarkdown remarkPlugins={[remarkGfm]}>{text}</ReactMarkdown>}
+                      onChange={({ text }) => handleChange('description', text)}
+                      config={{ view: { menu: true, md: true, html: false }, canView: { menu: true, md: true, html: false, fullScreen: true, hideMenu: true } }}
+                      className="bg-transparent text-white"
+                    />
                   </div>
                 </div>
-              ))}
-              <button
-                className="text-xs text-green-400 hover:underline"
-                onClick={() => handleChange("examples", [...problem.examples, { input: "", output: "", explanation: "" }])}
-              >
-                + Add Example
-              </button>
-            </div>
-            {/* Constraints */}
-            <div className="space-y-2 bg-[#262626] p-4 rounded-lg border border-[#222222]">
-              <label className="block mb-1 font-semibold">Constraints</label>
-              {problem.constraints.map((c, idx) => (
-                <div key={idx} className="flex items-center mb-1">
-                  <input
-                    className="w-full bg-[#333333] border border-[#222222] rounded px-2 py-1 text-white"
-                    placeholder="Constraint"
-                    value={c}
-                    onChange={(e) => {
-                      const updated = [...problem.constraints];
-                      updated[idx] = e.target.value;
-                      handleChange("constraints", updated);
-                    }}
-                  />
+                {/* Examples */}
+                <div className="space-y-2 bg-[#262626] p-4 rounded-lg border border-[#222222]">
+                  <label className="block mb-1 font-semibold">Examples</label>
+                  {problem.examples.map((ex, idx) => (
+                    <div key={idx} className="mb-2 p-2 rounded bg-[#333333] border border-[#222222]">
+                      <input
+                        className="w-full mb-1 bg-transparent border-b border-[#222222] text-white"
+                        placeholder="Input"
+                        value={ex.input}
+                        onChange={(e) => {
+                          const updated = [...problem.examples];
+                          updated[idx].input = e.target.value;
+                          handleChange("examples", updated);
+                        }}
+                      />
+                      <input
+                        className="w-full mb-1 bg-transparent border-b border-[#222222] text-white"
+                        placeholder="Output"
+                        value={ex.output}
+                        onChange={(e) => {
+                          const updated = [...problem.examples];
+                          updated[idx].output = e.target.value;
+                          handleChange("examples", updated);
+                        }}
+                      />
+                      <input
+                        className="w-full bg-transparent border-b border-[#222222] text-white"
+                        placeholder="Explanation (optional)"
+                        value={ex.explanation}
+                        onChange={(e) => {
+                          const updated = [...problem.examples];
+                          updated[idx].explanation = e.target.value;
+                          handleChange("examples", updated);
+                        }}
+                      />
+                      <div className="flex justify-end mt-1">
+                        <button
+                          className="text-xs text-red-400 hover:underline"
+                          onClick={() => {
+                            const updated = problem.examples.filter((_, i) => i !== idx);
+                            handleChange("examples", updated);
+                          }}
+                          disabled={problem.examples.length === 1}
+                        >
+                          Remove
+                        </button>
+                      </div>
+                    </div>
+                  ))}
                   <button
-                    className="ml-2 text-xs text-red-400 hover:underline"
-                    onClick={() => {
-                      const updated = problem.constraints.filter((_, i) => i !== idx);
-                      handleChange("constraints", updated);
-                    }}
-                    disabled={problem.constraints.length === 1}
+                    className="text-xs text-green-400 hover:underline"
+                    onClick={() => handleChange("examples", [...problem.examples, { input: "", output: "", explanation: "" }])}
                   >
-                    Remove
+                    + Add Example
                   </button>
                 </div>
-              ))}
-              <button
-                className="text-xs text-green-400 hover:underline"
-                onClick={() => handleChange("constraints", [...problem.constraints, ""])}
-              >
-                + Add Constraint
-              </button>
-            </div>
-            {/* Starter Code (Single Editor with Language Switcher) */}
-            <div className="space-y-2 bg-[#262626] p-4 rounded-lg border border-[#222222]">
-              <label className="block mb-1 font-semibold">Starter Code</label>
-              <div className="flex items-center space-x-2 mb-2">
-                {(['python', 'sql', 'postgres'] as LangType[]).map((lang) => (
+                {/* Constraints */}
+                <div className="space-y-2 bg-[#262626] p-4 rounded-lg border border-[#222222]">
+                  <label className="block mb-1 font-semibold">Constraints</label>
+                  {problem.constraints.map((c, idx) => (
+                    <div key={idx} className="flex items-center mb-1">
+                      <input
+                        className="w-full bg-[#333333] border border-[#222222] rounded px-2 py-1 text-white"
+                        placeholder="Constraint"
+                        value={c}
+                        onChange={(e) => {
+                          const updated = [...problem.constraints];
+                          updated[idx] = e.target.value;
+                          handleChange("constraints", updated);
+                        }}
+                      />
+                      <button
+                        className="ml-2 text-xs text-red-400 hover:underline"
+                        onClick={() => {
+                          const updated = problem.constraints.filter((_, i) => i !== idx);
+                          handleChange("constraints", updated);
+                        }}
+                        disabled={problem.constraints.length === 1}
+                      >
+                        Remove
+                      </button>
+                    </div>
+                  ))}
                   <button
-                    key={lang}
-                    className={`px-3 py-1 rounded text-xs font-medium border border-[#222222] transition-colors focus:outline-none ${selectedLang === lang ? 'bg-[#333333] text-white' : 'bg-black text-gray-400 hover:text-white'}`}
-                    onClick={() => setSelectedLang(lang)}
+                    className="text-xs text-green-400 hover:underline"
+                    onClick={() => handleChange("constraints", [...problem.constraints, ""])}
                   >
-                    {lang.charAt(0).toUpperCase() + lang.slice(1)}
+                    + Add Constraint
                   </button>
-                ))}
-              </div>
-              <div style={{ height: '70vh' }}>
-                <CodeEditor
-                  language={selectedLang === 'postgres' ? 'sql' : selectedLang}
-                  value={codeState[selectedLang]}
-                  onChange={(val) => {
-                    setCodeState((prev) => ({ ...prev, [selectedLang]: val }));
-                    // Update the correct field in starterCode
-                    if (selectedLang === 'postgres') {
-                      handleChange('starterCode', { ...problem.starterCode, sql: val });
-                    } else {
-                      handleChange('starterCode', { ...problem.starterCode, [selectedLang]: val });
-                    }
-                  }}
+                </div>
+                {/* Starter Code (Single Editor with Language Switcher) */}
+                <div className="space-y-2 bg-[#262626] p-4 rounded-lg border border-[#222222]">
+                  <label className="block mb-1 font-semibold">Starter Code</label>
+                  <div className="flex items-center space-x-2 mb-2">
+                    {(['python', 'sql', 'postgres'] as LangType[]).map((lang) => (
+                      <button
+                        key={lang}
+                        className={`px-3 py-1 rounded text-xs font-medium border border-[#222222] transition-colors focus:outline-none ${selectedLang === lang ? 'bg-[#333333] text-white' : 'bg-black text-gray-400 hover:text-white'}`}
+                        onClick={() => setSelectedLang(lang)}
+                      >
+                        {lang.charAt(0).toUpperCase() + lang.slice(1)}
+                      </button>
+                    ))}
+                  </div>
+                  <div style={{ height: '70vh' }}>
+                    <CodeEditor
+                      language={selectedLang === 'postgres' ? 'sql' : selectedLang}
+                      value={codeState[selectedLang]}
+                      onChange={(val) => {
+                        setCodeState((prev) => ({ ...prev, [selectedLang]: val }));
+                        // Update the correct field in starterCode
+                        if (selectedLang === 'postgres') {
+                          handleChange('starterCode', { ...problem.starterCode, sql: val });
+                        } else {
+                          handleChange('starterCode', { ...problem.starterCode, [selectedLang]: val });
+                        }
+                      }}
+                    />
+                  </div>
+                </div>
+                {/* JSON Preview */}
+                <div className="bg-[#262626] p-4 rounded-lg border border-[#222222]">
+                  <button
+                    className="mb-2 px-3 py-1 bg-[#333333] border border-[#222222] rounded text-xs text-white hover:bg-[#222222]"
+                    onClick={() => setJsonView((v) => !v)}
+                  >
+                    {jsonView ? "Hide JSON" : "Show JSON"}
+                  </button>
+                  {jsonView && (
+                    <pre className="text-xs bg-black p-3 rounded overflow-x-auto border border-[#222222]">
+                      {JSON.stringify(problem, null, 2)}
+                    </pre>
+                  )}
+                </div>
+              </>
+            )}
+            {/* Video Form */}
+            {viewType === 'video' && (
+              <div className="space-y-4 bg-[#262626] p-4 rounded-lg border border-[#222222]">
+                <input
+                  className="w-full bg-[#333333] border border-[#222222] rounded px-3 py-2 text-white mb-2"
+                  placeholder="Video ID"
+                  value={videoData.id}
+                  onChange={e => handleVideoChange('id', e.target.value)}
                 />
+                <input
+                  className="w-full bg-[#333333] border border-[#222222] rounded px-3 py-2 text-white mb-2"
+                  placeholder="Title"
+                  value={videoData.title}
+                  onChange={e => handleVideoChange('title', e.target.value)}
+                />
+                <textarea
+                  className="w-full bg-[#333333] border border-[#222222] rounded px-3 py-2 text-white mb-2"
+                  placeholder="Description"
+                  value={videoData.description}
+                  onChange={e => handleVideoChange('description', e.target.value)}
+                  rows={3}
+                />
+                <input
+                  className="w-full bg-[#333333] border border-[#222222] rounded px-3 py-2 text-white mb-2"
+                  placeholder="Duration (e.g. 15 min)"
+                  value={videoData.duration}
+                  onChange={e => handleVideoChange('duration', e.target.value)}
+                />
+                <input
+                  className="w-full bg-[#333333] border border-[#222222] rounded px-3 py-2 text-white mb-2"
+                  placeholder="Video URL (YouTube embed or custom)"
+                  value={videoData.videoUrl}
+                  onChange={e => handleVideoChange('videoUrl', e.target.value)}
+                />
+                <select
+                  className="bg-[#333333] border border-[#222222] rounded px-3 py-2 text-white mb-2"
+                  value={videoData.type}
+                  onChange={e => handleVideoChange('type', e.target.value)}
+                >
+                  <option value="youtube">YouTube</option>
+                  <option value="custom">Custom/DRM</option>
+                </select>
+                <input
+                  className="w-full bg-[#333333] border border-[#222222] rounded px-3 py-2 text-white mb-2"
+                  placeholder="Difficulty (beginner/intermediate/advanced)"
+                  value={videoData.difficulty}
+                  onChange={e => handleVideoChange('difficulty', e.target.value)}
+                />
+                <input
+                  className="w-full bg-[#333333] border border-[#222222] rounded px-3 py-2 text-white mb-2"
+                  placeholder="Category"
+                  value={videoData.category}
+                  onChange={e => handleVideoChange('category', e.target.value)}
+                />
+                <input
+                  className="w-full bg-[#333333] border border-[#222222] rounded px-3 py-2 text-white mb-2"
+                  placeholder="Presenter (optional)"
+                  value={videoData.presenter}
+                  onChange={e => handleVideoChange('presenter', e.target.value)}
+                />
+                <input
+                  className="w-full bg-[#333333] border border-[#222222] rounded px-3 py-2 text-white mb-2"
+                  placeholder="Presenter Title (optional)"
+                  value={videoData.presenterTitle}
+                  onChange={e => handleVideoChange('presenterTitle', e.target.value)}
+                />
+                <input
+                  className="w-full bg-[#333333] border border-[#222222] rounded px-3 py-2 text-white mb-2"
+                  placeholder="Thumbnail URL (optional)"
+                  value={videoData.thumbnail}
+                  onChange={e => handleVideoChange('thumbnail', e.target.value)}
+                />
+                <textarea
+                  className="w-full bg-[#333333] border border-[#222222] rounded px-3 py-2 text-white mb-2"
+                  placeholder="Transcript (optional)"
+                  value={videoData.transcript}
+                  onChange={e => handleVideoChange('transcript', e.target.value)}
+                  rows={5}
+                />
+                {/* JSON Preview for video data */}
+                <div className="bg-[#222222] p-4 rounded-lg border border-[#333333]">
+                  <button
+                    className="mb-2 px-3 py-1 bg-[#333333] border border-[#222222] rounded text-xs text-white hover:bg-[#222222]"
+                    onClick={() => setJsonView((v) => !v)}
+                  >
+                    {jsonView ? "Hide JSON" : "Show JSON"}
+                  </button>
+                  {jsonView && (
+                    <pre className="text-xs bg-black p-3 rounded overflow-x-auto border border-[#222222]">
+                      {JSON.stringify(videoData, null, 2)}
+                    </pre>
+                  )}
+                </div>
               </div>
-            </div>
-            {/* JSON Preview */}
-            <div className="bg-[#262626] p-4 rounded-lg border border-[#222222]">
-              <button
-                className="mb-2 px-3 py-1 bg-[#333333] border border-[#222222] rounded text-xs text-white hover:bg-[#222222]"
-                onClick={() => setJsonView((v) => !v)}
-              >
-                {jsonView ? "Hide JSON" : "Show JSON"}
-              </button>
-              {jsonView && (
-                <pre className="text-xs bg-black p-3 rounded overflow-x-auto border border-[#222222]">
-                  {JSON.stringify(problem, null, 2)}
-                </pre>
-              )}
-            </div>
+            )}
           </div>
         </div>
       </div>

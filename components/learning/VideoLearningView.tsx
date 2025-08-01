@@ -107,15 +107,32 @@ export default function VideoLearningView({ videos, selectedVideoId, onVideoChan
           <div className="flex-1 overflow-y-auto p-4">
             <h3 className="font-semibold text-gray-900 mb-2">{currentVideo.title}</h3>
             <div className="text-sm text-gray-600 space-y-2">
+              <p><strong>ID:</strong> {currentVideo.id}</p>
+              <p><strong>Type:</strong> {currentVideo.type}</p>
+              <p><strong>Difficulty:</strong> {currentVideo.difficulty}</p>
+              <p><strong>Category:</strong> {currentVideo.category}</p>
+              <p><strong>Duration:</strong> {currentVideo.duration}</p>
+              <p><strong>Video URL:</strong> {currentVideo.videoUrl || currentVideo.url}</p>
+              {currentVideo.thumbnail && (
+                <div>
+                  <strong>Thumbnail:</strong>
+                  <img src={currentVideo.thumbnail} alt="thumbnail" className="w-full rounded mt-1" />
+                </div>
+              )}
               {currentVideo.presenter && (
                 <p><strong>Presenter:</strong> {currentVideo.presenter}</p>
               )}
               {currentVideo.presenterTitle && (
-                <p><strong>Title:</strong> {currentVideo.presenterTitle}</p>
+                <p><strong>Presenter Title:</strong> {currentVideo.presenterTitle}</p>
               )}
-              <p><strong>Duration:</strong> {currentVideo.duration}</p>
               {currentVideo.description && (
                 <p><strong>Description:</strong> {currentVideo.description}</p>
+              )}
+              {currentVideo.transcript && (
+                <div>
+                  <strong>Transcript:</strong>
+                  <pre className="bg-gray-100 text-gray-800 rounded p-2 mt-1 whitespace-pre-wrap max-h-40 overflow-y-auto">{currentVideo.transcript}</pre>
+                </div>
               )}
             </div>
           </div>
