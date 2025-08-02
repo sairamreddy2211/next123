@@ -4,7 +4,9 @@ import { useState } from "react";
 import ReactMarkdown from 'react-markdown';
 import remarkGfm from 'remark-gfm';
 import dynamic from "next/dynamic";
+import { useRouter, useSearchParams } from "next/navigation";
 import { useTheme } from '@/components/providers/ThemeProvider';
+import AdminNavigation from '@/components/admin/AdminNavigation';
 import { QuestionView } from '@/components/problem-solving/InteractiveLearningView';
 import TableMarkdownGenerator from '@/components/admin/TableMarkdownGenerator';
 import ProblemForm from '@/components/admin/ProblemForm';
@@ -74,12 +76,16 @@ const defaultProblem: ProblemData = {
 
 export default function ProblemEditor() {
   const { themeColors } = useTheme();
+  const router = useRouter();
+  const searchParams = useSearchParams();
+  const mode = searchParams.get('mode');
+  
   const [problem, setProblem] = useState<ProblemData>(defaultProblem);
   const [jsonView, setJsonView] = useState(false);
   type LangType = 'python' | 'sql' | 'postgres';
   const [selectedLang, setSelectedLang] = useState<LangType>('python');
   const [showHints, setShowHints] = useState(false);
-  const [viewType, setViewType] = useState<'leetcode' | 'video'>('leetcode');
+  const [viewType, setViewType] = useState<'leetcode' | 'video'>(mode === 'video' ? 'video' : 'leetcode');
   
   // Controlled code state for each language
   const [codeState, setCodeState] = useState<{ [K in LangType]: string }>({
@@ -123,9 +129,58 @@ export default function ProblemEditor() {
     setVideoData((prev) => ({ ...prev, [field]: value }));
   };
 
+  // Check if we're editing a section from course editor
+  const isEditingSection = () => {
+    if (typeof window !== 'undefined') {
+      return localStorage.getItem('editingSection') !== null;
+    }
+    return false;
+  };
+
+  const getEditingSectionData = () => {
+    if (typeof window !== 'undefined') {
+      const sectionData = localStorage.getItem('editingSection');
+      return sectionData ? JSON.parse(sectionData) : null;
+    }
+    return null;
+  };
+
+  const saveToCourseEditor = () => {
+    if (typeof window !== 'undefined') {
+      const sectionData = getEditingSectionData();
+      if (sectionData) {
+        const courseData = JSON.parse(localStorage.getItem('courseEditorData') || '{}');
+        
+        // Update the section content
+        const updatedCourse = {
+          ...courseData,
+          modules: courseData.modules.map((module: any) =>
+            module.id === sectionData.moduleId
+              ? {
+                  ...module,
+                  sections: module.sections.map((section: any) =>
+                    section.id === sectionData.sectionId
+                      ? {
+                          ...section,
+                          content: viewType === 'video' ? videoData : problem
+                        }
+                      : section
+                  )
+                }
+              : module
+          )
+        };
+
+        localStorage.setItem('courseEditorData', JSON.stringify(updatedCourse));
+        router.push('/admin/course-editor');
+      }
+    }
+  };
+
   return (
     <div className="min-h-screen text-white p-0" style={{ backgroundColor: themeColors.primary }}>
-      <div className="flex h-screen">
+      <AdminNavigation />
+      <div className="flex h-[calc(100vh-120px)]">
         {/* Left Panel: Live Preview (only for leetcode view) */}
         {viewType === 'leetcode' && (
           <div className="w-1/2 border-r overflow-y-auto p-6" style={{ 
@@ -165,12 +220,27 @@ export default function ProblemEditor() {
             {/* Table Markdown Generator Tool (only for leetcode) */}
             {viewType === 'leetcode' && <TableMarkdownGenerator />}
             
-            <h1 
-              className="text-2xl font-bold mb-4"
-              style={{ color: themeColors.textPrimary }}
-            >
-              Admin {viewType === 'leetcode' ? 'Problem Editor' : 'Video Editor'}
-            </h1>
+            <div className="flex justify-between items-center mb-4">
+              <h1 
+                className="text-2xl font-bold"
+                style={{ color: themeColors.textPrimary }}
+              >
+                Admin {viewType === 'leetcode' ? 'Problem Editor' : 'Video Editor'}
+              </h1>
+              
+              {isEditingSection() && (
+                <button
+                  className="px-4 py-2 rounded transition-colors"
+                  style={{
+                    backgroundColor: themeColors.accent,
+                    color: themeColors.textPrimary
+                  }}
+                  onClick={saveToCourseEditor}
+                >
+                  Save to Course
+                </button>
+              )}
+            </div>
             
             {/* LeetCode Problem Form */}
             {viewType === 'leetcode' && (
