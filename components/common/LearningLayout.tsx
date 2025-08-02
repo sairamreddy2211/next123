@@ -1,6 +1,7 @@
 "use client";
 
 import { ReactNode } from 'react';
+import { useTheme } from '@/components/providers/ThemeProvider';
 import NavigationHeader from './NavigationHeader';
 
 interface LearningLayoutProps {
@@ -20,8 +21,13 @@ export default function LearningLayout({
   isLightMode,
   onToggleLightMode
 }: LearningLayoutProps) {
+  const { themeColors } = useTheme();
+  
   return (
-    <div className="min-h-screen bg-gray-900">
+    <div 
+      className="min-h-screen" 
+      style={{ backgroundColor: themeColors.primary }}
+    >
       <NavigationHeader
         breadcrumbs={breadcrumbs}
         showLearningNavigation={showLearningNavigation}

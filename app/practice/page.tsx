@@ -8,6 +8,7 @@ import { learningContent } from '@/data/learningContent';
 export default function PracticePage() {
   const [currentStep, setCurrentStep] = useState(1);
   const [isLightMode, setIsLightMode] = useState(false);
+  const [selectedLessonId, setSelectedLessonId] = useState('employee-sales-analytics');
 
   const breadcrumbs = [
     { label: 'Practice', href: '/practice' },
@@ -15,6 +16,11 @@ export default function PracticePage() {
     { label: 'SQL Relationships Challenge' }
   ];
 
+  // Get the currently selected lesson
+  const currentLesson = learningContent.interactiveLessons.find(
+    lesson => lesson.id === selectedLessonId
+  ) || learningContent.interactiveLessons[0];
+  
   return (
     <LearningLayout
       breadcrumbs={breadcrumbs}
@@ -26,7 +32,7 @@ export default function PracticePage() {
       {/* Content */}
       <div className="h-[calc(100vh-67px)]">
         <InteractiveLearningView
-          lessons={learningContent.interactiveLessons}
+          lesson={currentLesson}
         />
       </div>
     </LearningLayout>

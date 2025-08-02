@@ -11,7 +11,6 @@ import ProblemForm from '@/components/admin/ProblemForm';
 import VideoForm from '@/components/admin/VideoForm';
 import ExamplesEditor from '@/components/admin/ExamplesEditor';
 import ConstraintsEditor from '@/components/admin/ConstraintsEditor';
-import HintsEditor from '@/components/admin/HintsEditor';
 import CodeEditorSection from '@/components/admin/CodeEditorSection';
 
 // Dynamically import Markdown Editor (react-markdown-editor-lite)
@@ -40,7 +39,6 @@ interface ProblemData {
   };
   examples: Example[];
   constraints: string[];
-  hints: string[];
   tableView?: {
     headers: string[];
     rows: (string | number)[][];
@@ -68,7 +66,6 @@ const defaultProblem: ProblemData = {
   content: "",
   examples: [{ input: "", output: "", explanation: "" }],
   constraints: [""],
-  hints: [""],
   starterCode: { javascript: "", python: "", sql: "" }
 };
 
@@ -259,27 +256,12 @@ export default function ProblemEditor() {
                   />
                 </div>
 
-                {/* Hints */}
-                <div 
-                  className="p-4 rounded-lg border mb-6"
-                  style={{
-                    backgroundColor: themeColors.secondary,
-                    borderColor: themeColors.border
-                  }}
-                >
-                  <HintsEditor
-                    hints={problem.hints}
-                    onHintsChange={(hints) => handleChange('hints', hints)}
-                  />
-                </div>
-
                 {/* Starter Code */}
                 <div 
                   className="p-4 rounded-lg border mb-6"
                   style={{
                     backgroundColor: themeColors.secondary,
-                    borderColor: themeColors.border,
-                    height: '400px'
+                    borderColor: themeColors.border
                   }}
                 >
                   <CodeEditorSection
@@ -288,10 +270,10 @@ export default function ProblemEditor() {
                       { key: 'sql', name: 'SQL' },
                       { key: 'postgres', name: 'PostgreSQL' }
                     ]}
-                    selectedLanguage={selectedLang}
-                    onLanguageChange={(lang: string) => setSelectedLang(lang as LangType)}
+                    selectedLanguage={selectedLang === 'postgres' ? 'sql' : selectedLang}
+                    onLanguageChange={(lang) => setSelectedLang(lang as LangType)}
                     starterCode={codeState}
-                    onStarterCodeChange={(lang: string, code: string) => {
+                    onStarterCodeChange={(lang, code) => {
                       setCodeState((prev) => ({ ...prev, [lang as LangType]: code }));
                       if (lang === 'postgres') {
                         handleChange('starterCode', { ...problem.starterCode, sql: code });

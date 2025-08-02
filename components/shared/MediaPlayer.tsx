@@ -2,6 +2,7 @@
 
 import { useState, useRef, useEffect } from 'react';
 import { Play, Pause, Volume2, Maximize, RotateCcw } from 'lucide-react';
+import { useTheme } from '@/components/providers/ThemeProvider';
 
 interface MediaPlayerProps {
   src: string;
@@ -28,8 +29,11 @@ export default function MediaPlayer({
   playing = false,
   onPlayPause,
   currentTime = 0,
-  duration = 0
+  duration = 0,
+  onSeek,
+  onSkip
 }: MediaPlayerProps) {
+  const { themeColors } = useTheme();
   const videoRef = useRef<HTMLVideoElement>(null);
   const [volume, setVolume] = useState(0.8);
   const [showControls, setShowControls] = useState(true);
@@ -107,7 +111,10 @@ export default function MediaPlayer({
   };
 
   return (
-    <div className="relative bg-black rounded-lg overflow-hidden">
+    <div 
+      className="relative rounded-lg overflow-hidden" 
+      style={{ backgroundColor: themeColors.primary }}
+    >
       <video
         ref={videoRef}
         src={src}
@@ -122,7 +129,8 @@ export default function MediaPlayer({
         <div className="absolute bottom-0 left-0 right-0 bg-gradient-to-t from-black/80 to-transparent p-4">
           {/* Progress Bar */}
           <div
-            className="w-full h-2 bg-gray-600 rounded cursor-pointer mb-4"
+            className="w-full h-2 rounded cursor-pointer mb-4"
+            style={{ backgroundColor: themeColors.tertiary }}
             onClick={handleProgressClick}
           >
             <div

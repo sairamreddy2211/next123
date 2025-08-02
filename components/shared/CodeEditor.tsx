@@ -3,7 +3,8 @@
 import { useState, useRef } from 'react';
 import { Editor } from '@monaco-editor/react';
 import { Play, RotateCcw, CheckCircle, XCircle } from 'lucide-react';
-import Image from 'next/image';
+import { useTheme } from '@/components/providers/ThemeProvider';
+import type { TestResult } from '@/models/problem';
 
 interface CodeEditorProps {
   language: string;
@@ -15,14 +16,6 @@ interface CodeEditorProps {
   isRunning?: boolean;
 }
 
-interface TestResult {
-  passed: boolean;
-  input: string;
-  expectedOutput: string;
-  actualOutput: string;
-  hidden?: boolean;
-}
-
 export default function CodeEditor({
   language = 'sql',
   defaultValue,
@@ -32,6 +25,7 @@ export default function CodeEditor({
   testResults = [],
   isRunning = false
 }: CodeEditorProps) {
+  const { themeColors } = useTheme();
   const [code, setCode] = useState(defaultValue);
 
   const handleEditorChange = (value: string | undefined) => {
@@ -50,144 +44,237 @@ export default function CodeEditor({
     if (onReset) onReset();
   };
 
-  const editorOptions = {
-    minimap: { enabled: false },
-    fontSize: 14,
-    lineNumbers: 'on' as const,
-    roundedSelection: false,
-    scrollBeyondLastLine: false,
-    automaticLayout: true,
-    tabSize: 2,
-    wordWrap: 'on' as const,
-    bracketPairColorization: { enabled: true },
-    renderLineHighlight: 'gutter' as const,
-    selectionHighlight: false,
-    occurrencesHighlight: 'off' as const,
+  // Get language label
+  const getLanguageLabel = () => {
+    switch (language) {
+      case 'sql':
+      case 'postgres':
+        return 'SQL';
+      case 'javascript':
+        return 'JavaScript';
+      case 'python':
+        return 'Python';
+      default:
+        return language.toUpperCase();
+    }
   };
 
-  return (
-    <div className="flex flex-col h-full bg-black">
-      {/* Editor Header */}
-      <div className="flex items-center justify-between px-4 py-2 border-b bg-black" style={{ borderBottomColor: '#222222', backgroundColor: '#262626' }}>
-        <div className="flex items-center space-x-2">
-          {/* <div className="w-3 h-3 bg-red-500 rounded-full"></div>
-          <div className="w-3 h-3 bg-yellow-500 rounded-full"></div>
-          <div className="w-3 h-3 bg-green-500 rounded-full"></div> */}
+  const passedTests = testResults.filter(t => t.passed).length;
+  const totalTests = testResults.length;
 
-            <Image src="/code.svg" alt="Code Icon" width={20} height={20} className="w-5 h-5" />
-            <span className="text-white">Code</span>
-        </div>
-        
+  return (
+    <div className="flex flex-col h-full" style={{ backgroundColor: themeColors.primary }}>
+      {/* Header */}
+      <div 
+        className="flex items-center justify-between px-4 py-2 border-b" 
+        style={{ 
+          borderBottomColor: themeColors.border, 
+          backgroundColor: themeColors.secondary 
+        }}
+      >
+        {/* Language info */}
         <div className="flex items-center space-x-2">
-          <button
-            onClick={handleReset}
-            className="flex items-center space-x-1 px-2 py-1 text-xs text-gray-400 hover:text-gray-300 rounded transition-colors"
-            style={{ backgroundColor: 'transparent', border: '1px solid #222222' }}
+          <span 
+            className="text-sm font-medium" 
+            style={{ color: themeColors.textPrimary }}
           >
-            <RotateCcw className="w-3 h-3" />
-            <span>Reset</span>
-          </button>
-          
+            {getLanguageLabel()}
+          </span>
+          <div 
+            className="px-2 py-1 rounded text-xs" 
+            style={{ 
+              backgroundColor: 'transparent', 
+              border: `1px solid ${themeColors.border}`,
+              color: themeColors.textMuted
+            }}
+          >
+            Code
+          </div>
+        </div>
+
+        {/* Actions */}
+        <div className="flex items-center space-x-2">
           <button
             onClick={handleRun}
             disabled={isRunning}
-            className="flex items-center space-x-1 px-3 py-1 bg-green-600 hover:bg-green-700 disabled:bg-gray-600 text-white rounded text-xs font-medium transition-colors"
+            className="flex items-center space-x-1 px-3 py-1 text-white rounded text-xs font-medium transition-colors"
+            style={{ 
+              backgroundColor: isRunning ? '#6B7280' : '#16A34A',
+              cursor: isRunning ? 'not-allowed' : 'pointer'
+            }}
+            onMouseEnter={(e) => {
+              if (!isRunning) e.currentTarget.style.backgroundColor = '#15803D';
+            }}
+            onMouseLeave={(e) => {
+              if (!isRunning) e.currentTarget.style.backgroundColor = '#16A34A';
+            }}
           >
             <Play className="w-3 h-3" />
             <span>{isRunning ? 'Running...' : 'Run'}</span>
           </button>
+          <button
+            onClick={handleReset}
+            className="p-1 rounded hover:opacity-70 transition-opacity"
+            style={{ color: themeColors.textMuted }}
+          >
+            <RotateCcw className="w-4 h-4" />
+          </button>
         </div>
       </div>
 
-      {/* Monaco Editor */}
-      <div className="flex-1 min-h-0 bg-black">
+      {/* Editor */}
+      <div className="flex-1 min-h-0" style={{ backgroundColor: themeColors.primary }}>
         <Editor
-          height="100%"
-          language={language}
+          language={language === 'postgres' ? 'sql' : language}
           value={code}
           onChange={handleEditorChange}
-          options={editorOptions}
-          theme="vs-dark"
+          theme="leetcode-theme"
+          options={{
+            minimap: { enabled: false },
+            scrollBeyondLastLine: false,
+            fontSize: 14,
+            lineNumbers: 'on',
+            wordWrap: 'on',
+            automaticLayout: true,
+            contextmenu: false,
+            selectOnLineNumbers: true,
+            roundedSelection: false,
+            readOnly: false,
+            cursorStyle: 'line',
+            scrollbar: {
+              vertical: 'visible',
+              horizontal: 'visible'
+            },
+          }}
           beforeMount={(monaco) => {
-            // Define custom LeetCode-like theme
+            // Define custom theme using our theme colors
             monaco.editor.defineTheme('leetcode-theme', {
               base: 'vs-dark',
               inherit: true,
-              rules: [
-                { token: 'comment', foreground: '6B7280', fontStyle: 'italic' },
-                { token: 'keyword', foreground: 'C678DD' },
-                { token: 'string', foreground: '98C379' },
-                { token: 'number', foreground: 'D19A66' },
-                { token: 'type', foreground: 'E06C75' },
-                { token: 'identifier', foreground: 'ABB2BF' },
-                { token: 'operator', foreground: '56B6C2' },
-              ],
+              rules: [],
               colors: {
-                'editor.background': '#000000',
-                'editor.foreground': '#F9FAFB',
-                'editor.lineHighlightBackground': '#222222',
-                'editor.selectionBackground': '#4B5563',
-                'editor.inactiveSelectionBackground': '#374151',
-                'editorCursor.foreground': '#F9FAFB',
-                'editorLineNumber.foreground': '#6B7280',
-                'editorLineNumber.activeForeground': '#D1D5DB',
-                'editorGutter.background': '#000000',
-                'editorWidget.background': '#262626',
-                'editorWidget.border': '#222222',
-                'input.background': '#262626',
-                'input.border': '#222222',
-                'dropdown.background': '#262626',
-                'dropdown.border': '#222222',
-                'list.hoverBackground': '#333333',
-                'list.activeSelectionBackground': '#333333',
+                'editor.background': themeColors.primary,
+                'editor.foreground': themeColors.textPrimary,
+                'editor.lineHighlightBackground': themeColors.border,
+                'editorLineNumber.foreground': themeColors.textMuted,
+                'editorLineNumber.activeForeground': themeColors.textSecondary,
+                'editor.selectionBackground': `${themeColors.tertiary}80`,
+                'editor.inactiveSelectionBackground': `${themeColors.tertiary}40`,
+                'editorCursor.foreground': themeColors.textPrimary,
+                'editorWhitespace.foreground': themeColors.textMuted,
+                'editorWidget.background': themeColors.secondary,
+                'editorWidget.border': themeColors.border,
+                'input.background': themeColors.secondary,
+                'input.border': themeColors.border,
+                'dropdown.background': themeColors.secondary,
+                'dropdown.border': themeColors.border,
+                'list.hoverBackground': themeColors.tertiary,
+                'list.activeSelectionBackground': themeColors.tertiary,
               }
             });
-            monaco.editor.setTheme('leetcode-theme');
           }}
         />
       </div>
 
       {/* Test Results */}
       {testResults.length > 0 && (
-        <div className="border-t p-4 max-h-48 overflow-y-auto" style={{ borderTopColor: '#222222', backgroundColor: '#262626' }}>
-          <h4 className="text-sm font-semibold text-white mb-3">Test Results:</h4>
-          <div className="space-y-2">
+        <div 
+          className="border-t p-4 max-h-48 overflow-y-auto" 
+          style={{ 
+            borderTopColor: themeColors.border, 
+            backgroundColor: themeColors.secondary 
+          }}
+        >
+          <div className="flex items-center justify-between mb-3">
+            <h3 
+              className="text-sm font-semibold"
+              style={{ color: themeColors.textPrimary }}
+            >
+              Test Results ({passedTests}/{totalTests} passed)
+            </h3>
+            <div className="flex items-center space-x-2">
+              {passedTests === totalTests && totalTests > 0 ? (
+                <div className="flex items-center space-x-1">
+                  <CheckCircle className="w-4 h-4 text-green-500" />
+                  <span className="text-xs text-green-500">All tests passed!</span>
+                </div>
+              ) : (
+                <div className="flex items-center space-x-1">
+                  <XCircle className="w-4 h-4 text-red-500" />
+                  <span className="text-xs text-red-500">Some tests failed</span>
+                </div>
+              )}
+            </div>
+          </div>
+          
+          <div className="space-y-3">
             {testResults.map((result, index) => (
-              <div
-                key={index}
-                className={`p-3 rounded-lg border ${
-                  result.passed
-                    ? 'bg-green-500/10 border-green-500/30'
-                    : 'bg-red-500/10 border-red-500/30'
-                }`}
+              <div 
+                key={index} 
+                className="p-3 rounded-lg border"
+                style={{ 
+                  borderColor: result.passed ? '#16A34A' : '#DC2626',
+                  backgroundColor: result.passed ? 'rgba(16, 185, 129, 0.1)' : 'rgba(220, 38, 38, 0.1)'
+                }}
               >
                 <div className="flex items-center space-x-2 mb-2">
                   {result.passed ? (
-                    <CheckCircle className="w-4 h-4 text-green-400" />
+                    <CheckCircle className="w-4 h-4 text-green-500" />
                   ) : (
-                    <XCircle className="w-4 h-4 text-red-400" />
+                    <XCircle className="w-4 h-4 text-red-500" />
                   )}
-                  <span className="text-sm font-medium text-white">
+                  <span 
+                    className="text-sm font-medium"
+                    style={{ color: themeColors.textPrimary }}
+                  >
                     Test Case {index + 1} {result.hidden ? '(Hidden)' : ''}
                   </span>
                 </div>
                 
                 {!result.hidden && (
-                  <div className="text-xs space-y-1">
+                  <div className="space-y-2 text-xs">
                     <div>
-                      <span className="font-medium text-gray-300">Input:</span> 
-                      <span className="text-green-400 ml-2">{result.input}</span>
+                      <span 
+                        className="font-medium"
+                        style={{ color: themeColors.textSecondary }}
+                      >
+                        Input: 
+                      </span>
+                      <code 
+                        className="ml-1"
+                        style={{ color: themeColors.textMuted }}
+                      >
+                        {result.input}
+                      </code>
                     </div>
                     <div>
-                      <span className="font-medium text-gray-300">Expected:</span> 
-                      <span className="text-blue-400 ml-2">{result.expectedOutput}</span>
+                      <span 
+                        className="font-medium"
+                        style={{ color: themeColors.textSecondary }}
+                      >
+                        Expected: 
+                      </span>
+                      <code 
+                        className="ml-1"
+                        style={{ color: themeColors.textMuted }}
+                      >
+                        {result.expectedOutput}
+                      </code>
                     </div>
-                    {!result.passed && (
-                      <div>
-                        <span className="font-medium text-gray-300">Got:</span> 
-                        <span className="text-red-400 ml-2">{result.actualOutput}</span>
-                      </div>
-                    )}
+                    <div>
+                      <span 
+                        className="font-medium"
+                        style={{ color: themeColors.textSecondary }}
+                      >
+                        Actual: 
+                      </span>
+                      <code 
+                        className="ml-1"
+                        style={{ color: result.passed ? themeColors.textMuted : '#DC2626' }}
+                      >
+                        {result.actualOutput}
+                      </code>
+                    </div>
                   </div>
                 )}
               </div>

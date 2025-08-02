@@ -1,4 +1,5 @@
 import { Video, Step } from '@/types';
+import { EMPLOYEE_SALES_LESSON } from '@/constants';
 
 export const videoLessons: Video[] = [
   {
@@ -63,86 +64,6 @@ export const learningContent: LearningContent = {
     },
   ],
   interactiveLessons: [
-    {
-      id: 'lesson-1',
-      title: 'SQL SELECT Statements',
-      description: 'Practice writing basic SELECT queries.',
-      difficulty: 'beginner',
-      category: 'databases',
-      content: 'Learn how to retrieve data from tables using SELECT statements.',
-      problem: {
-        description: 'Write a SQL query to select all columns from the "users" table.',
-        examples: [
-          {
-            input: 'Table: users\\nColumns: id, name, email, age',
-            output: 'All rows with columns: id, name, email, age'
-          }
-        ],
-        constraints: ['Use standard SQL syntax', 'Select all columns using *'],
-        difficulty: 'beginner',
-        starterCode: '-- Write your SQL query here\\nSELECT',
-        testCases: [
-          {
-            input: 'users table with 3 rows',
-            expectedOutput: '3 rows returned with all columns',
-            hidden: false
-          }
-        ]
-      }
-    },
-    {
-      id: 'lesson-2',
-      title: 'JOIN Operations',
-      description: 'Master different types of SQL JOINs.',
-      difficulty: 'intermediate', 
-      category: 'databases',
-      content: 'Understand INNER, LEFT, RIGHT, and FULL OUTER JOINs.',
-      problem: {
-        description: 'Write a SQL query to join the "orders" and "customers" tables to show customer names with their orders.',
-        examples: [
-          {
-            input: 'orders: id, customer_id, product\\ncustomers: id, name',
-            output: 'customer_name, product for each order'
-          }
-        ],
-        constraints: ['Use INNER JOIN', 'Include customer name and product columns'],
-        difficulty: 'intermediate',
-        starterCode: '-- Join orders and customers tables\\nSELECT \\nFROM orders\\n',
-        testCases: [
-          {
-            input: '5 orders, 3 customers',
-            expectedOutput: '5 rows with customer names and products',
-            hidden: false
-          }
-        ]
-      }
-    },
-    {
-      id: 'lesson-3',
-      title: 'Data Aggregation',
-      description: 'Use GROUP BY and aggregate functions.',
-      difficulty: 'advanced',
-      category: 'databases',
-      content: 'Learn to summarize data using COUNT, SUM, AVG, and more.',
-      problem: {
-        description: 'Write a SQL query to count the number of orders per customer, showing only customers with more than 2 orders.',
-        examples: [
-          {
-            input: 'orders: customer_id, order_date, amount',
-            output: 'customer_id, order_count (where order_count > 2)'
-          }
-        ],
-        constraints: ['Use GROUP BY and HAVING', 'Count orders per customer', 'Filter for > 2 orders'],
-        difficulty: 'advanced',
-        starterCode: '-- Count orders per customer\\nSELECT customer_id,\\nFROM orders\\n',
-        testCases: [
-          {
-            input: '10 orders across 5 customers',
-            expectedOutput: 'Only customers with > 2 orders shown',
-            hidden: false
-          }
-        ]
-      }
-    }
+    EMPLOYEE_SALES_LESSON
   ]
 };

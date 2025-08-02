@@ -4,12 +4,13 @@ import { useState } from 'react';
 import LearningLayout from '@/components/common/LearningLayout';
 import VideoLearningView from '@/components/learning/VideoLearningView';
 import { learningContent } from '@/data/learningContent';
+import { Breadcrumb } from '@/models/navigation';
 
 export default function LearnPage() {
   const [selectedVideoId, setSelectedVideoId] = useState('video-1');
   const [isLightMode, setIsLightMode] = useState(false);
 
-  const breadcrumbs = [
+  const breadcrumbs: Breadcrumb[] = [
     { label: 'Learn', href: '/learn' },
     { label: 'Courses', href: '/courses' },
     { label: 'SQL Database Relationships' }
@@ -26,7 +27,6 @@ export default function LearnPage() {
       {/* Content */}
       <div className="h-[calc(100vh-67px)]">
         <VideoLearningView
-          selectedVideoId="video-1"
           videos={learningContent.videos}
           selectedVideoId={selectedVideoId}
           onVideoChange={setSelectedVideoId}
