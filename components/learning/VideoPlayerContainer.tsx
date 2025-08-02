@@ -28,8 +28,8 @@ export default function VideoPlayerContainer({
 }: VideoPlayerContainerProps) {
   const { themeColors } = useTheme();
   
-  const videoSrc = video.videoUrl || video.url || '';
-  const videoType = video.type || 'youtube';
+  const videoSrc = video.videoUrl;
+  const videoType = video.type;
 
   const renderVideoPlayer = () => {
     if (videoType === 'youtube') {
@@ -44,7 +44,7 @@ export default function VideoPlayerContainer({
           allowFullScreen
         />
       );
-    } else if (videoType === 'custom') {
+    } else if (videoType === 'drm') {
       return (
         <MediaPlayer
           key={video.id}
@@ -65,7 +65,7 @@ export default function VideoPlayerContainer({
   };
 
   const getContainerStyles = (): React.CSSProperties => {
-    if (videoType === 'custom') {
+    if (videoType === 'drm') {
       return {
         width: '50%',
         height: '70%',
@@ -97,16 +97,16 @@ export default function VideoPlayerContainer({
 
   return (
     <div
-      className={`flex items-center justify-center ${videoType === 'custom' ? 'relative group select-none' : ''}`}
+      className={`flex items-center justify-center ${videoType === 'drm' ? 'relative group select-none' : ''}`}
       style={getContainerStyles()}
-      onContextMenu={videoType === 'custom' ? (e) => e.preventDefault() : undefined}
+      onContextMenu={videoType === 'drm' ? (e) => e.preventDefault() : undefined}
     >
       <div className="w-full h-full">
         {renderVideoPlayer()}
       </div>
       
-      {/* Anti-piracy overlay for custom videos */}
-      {videoType === 'custom' && (
+      {/* Anti-piracy overlay for DRM videos */}
+      {videoType === 'drm' && (
         <div
           className="absolute inset-0 z-10"
           style={{

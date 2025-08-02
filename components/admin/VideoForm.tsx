@@ -10,7 +10,6 @@ interface VideoFormProps {
     description: string;
     videoUrl: string;
     duration: string;
-    level: string;
     thumbnailUrl: string;
   };
   onVideoDataChange: (data: any) => void;
@@ -105,29 +104,7 @@ export default function VideoForm({ videoData, onVideoDataChange }: VideoFormPro
         />
       </div>
 
-      <div>
-        <label 
-          className="block mb-1 font-semibold"
-          style={{ color: themeColors.textPrimary }}
-        >
-          Level
-        </label>
-        <select
-          className="w-full border rounded px-3 py-2"
-          style={{
-            backgroundColor: themeColors.tertiary,
-            borderColor: themeColors.border,
-            color: themeColors.textPrimary
-          }}
-          value={videoData.level}
-          onChange={(e) => updateField('level', e.target.value)}
-        >
-          <option value="">Select Level</option>
-          {VIDEO_LEVELS.map((level: string) => (
-            <option key={level} value={level}>{level}</option>
-          ))}
-        </select>
-      </div>
+
 
       <div className="md:col-span-2">
         <label 

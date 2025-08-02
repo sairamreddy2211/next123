@@ -65,48 +65,20 @@ export default function VideoDescriptionPanel({
         >
           <p><strong>ID:</strong> {video.id}</p>
           <p><strong>Type:</strong> {video.type}</p>
-          <p><strong>Difficulty:</strong> {video.difficulty}</p>
           <p><strong>Category:</strong> {video.category}</p>
           <p><strong>Duration:</strong> {video.duration}</p>
-          <p><strong>Video URL:</strong> {video.videoUrl || video.url}</p>
+          <p><strong>Video URL:</strong> {video.videoUrl}</p>
           
-          {video.thumbnail && (
-            <div>
-              <strong>Thumbnail:</strong>
-              <img 
-                src={video.thumbnail} 
-                alt="thumbnail" 
-                className="w-full rounded mt-1" 
-              />
-            </div>
-          )}
+          <div>
+            <strong>Thumbnail:</strong>
+            <img 
+              src={video.thumbnail} 
+              alt="thumbnail" 
+              className="w-full rounded mt-1" 
+            />
+          </div>
           
-          {video.presenter && (
-            <p><strong>Presenter:</strong> {video.presenter}</p>
-          )}
-          
-          {video.presenterTitle && (
-            <p><strong>Presenter Title:</strong> {video.presenterTitle}</p>
-          )}
-          
-          {video.description && (
-            <p><strong>Description:</strong> {video.description}</p>
-          )}
-          
-          {video.transcript && (
-            <div>
-              <strong>Transcript:</strong>
-              <pre 
-                className="rounded p-2 mt-1 whitespace-pre-wrap max-h-40 overflow-y-auto text-sm"
-                style={{ 
-                  backgroundColor: themeColors.tertiary,
-                  color: themeColors.textPrimary 
-                }}
-              >
-                {video.transcript}
-              </pre>
-            </div>
-          )}
+          <p><strong>Description:</strong> {video.description}</p>
         </div>
       </div>
     </div>

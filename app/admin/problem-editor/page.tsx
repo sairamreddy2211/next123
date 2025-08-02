@@ -90,18 +90,12 @@ export default function ProblemEditor() {
 
   // Video form state
   const [videoData, setVideoData] = useState({
-    id: '',
     title: '',
     description: '',
     duration: '',
     videoUrl: '',
-    difficulty: 'beginner',
     category: '',
-    presenter: '',
-    presenterTitle: '',
-    type: 'youtube',
     thumbnail: '',
-    transcript: '',
   });
 
   const handleChange = (field: keyof ProblemData, value: any) => {
@@ -115,6 +109,14 @@ export default function ProblemEditor() {
         postgres: value.sql ?? prev.postgres,
       }));
     }
+  };
+
+  // Function to detect video type from URL
+  const detectVideoType = (url: string): 'youtube' | 'drm' => {
+    if (url.includes('youtube.com') || url.includes('youtu.be')) {
+      return 'youtube';
+    }
+    return 'drm';
   };
 
   const handleVideoChange = (field: string, value: any) => {
@@ -354,7 +356,6 @@ export default function ProblemEditor() {
                       description: videoData.description,
                       videoUrl: videoData.videoUrl,
                       duration: videoData.duration,
-                      level: videoData.difficulty,
                       thumbnailUrl: videoData.thumbnail
                     }}
                     onVideoDataChange={(data) => {
@@ -362,7 +363,6 @@ export default function ProblemEditor() {
                       handleVideoChange('description', data.description);
                       handleVideoChange('videoUrl', data.videoUrl);
                       handleVideoChange('duration', data.duration);
-                      handleVideoChange('difficulty', data.level);
                       handleVideoChange('thumbnail', data.thumbnailUrl);
                     }}
                   />
@@ -388,48 +388,6 @@ export default function ProblemEditor() {
                         className="block mb-1 font-semibold"
                         style={{ color: themeColors.textPrimary }}
                       >
-                        Video ID
-                      </label>
-                      <input
-                        className="w-full border rounded px-3 py-2"
-                        style={{
-                          backgroundColor: themeColors.tertiary,
-                          borderColor: themeColors.border,
-                          color: themeColors.textPrimary
-                        }}
-                        value={videoData.id}
-                        onChange={e => handleVideoChange('id', e.target.value)}
-                        placeholder="Enter video ID..."
-                      />
-                    </div>
-
-                    <div>
-                      <label 
-                        className="block mb-1 font-semibold"
-                        style={{ color: themeColors.textPrimary }}
-                      >
-                        Type
-                      </label>
-                      <select
-                        className="w-full border rounded px-3 py-2"
-                        style={{
-                          backgroundColor: themeColors.tertiary,
-                          borderColor: themeColors.border,
-                          color: themeColors.textPrimary
-                        }}
-                        value={videoData.type}
-                        onChange={e => handleVideoChange('type', e.target.value)}
-                      >
-                        <option value="youtube">YouTube</option>
-                        <option value="custom">Custom/DRM</option>
-                      </select>
-                    </div>
-
-                    <div>
-                      <label 
-                        className="block mb-1 font-semibold"
-                        style={{ color: themeColors.textPrimary }}
-                      >
                         Category
                       </label>
                       <input
@@ -450,7 +408,7 @@ export default function ProblemEditor() {
                         className="block mb-1 font-semibold"
                         style={{ color: themeColors.textPrimary }}
                       >
-                        Presenter
+                        Video Type (Auto-detected)
                       </label>
                       <input
                         className="w-full border rounded px-3 py-2"
@@ -459,50 +417,9 @@ export default function ProblemEditor() {
                           borderColor: themeColors.border,
                           color: themeColors.textPrimary
                         }}
-                        value={videoData.presenter}
-                        onChange={e => handleVideoChange('presenter', e.target.value)}
-                        placeholder="Enter presenter name..."
-                      />
-                    </div>
-
-                    <div className="md:col-span-2">
-                      <label 
-                        className="block mb-1 font-semibold"
-                        style={{ color: themeColors.textPrimary }}
-                      >
-                        Presenter Title
-                      </label>
-                      <input
-                        className="w-full border rounded px-3 py-2"
-                        style={{
-                          backgroundColor: themeColors.tertiary,
-                          borderColor: themeColors.border,
-                          color: themeColors.textPrimary
-                        }}
-                        value={videoData.presenterTitle}
-                        onChange={e => handleVideoChange('presenterTitle', e.target.value)}
-                        placeholder="Enter presenter title..."
-                      />
-                    </div>
-
-                    <div className="md:col-span-2">
-                      <label 
-                        className="block mb-1 font-semibold"
-                        style={{ color: themeColors.textPrimary }}
-                      >
-                        Transcript (Optional)
-                      </label>
-                      <textarea
-                        className="w-full border rounded px-3 py-2"
-                        style={{
-                          backgroundColor: themeColors.tertiary,
-                          borderColor: themeColors.border,
-                          color: themeColors.textPrimary
-                        }}
-                        rows={5}
-                        value={videoData.transcript}
-                        onChange={e => handleVideoChange('transcript', e.target.value)}
-                        placeholder="Enter video transcript..."
+                        value={videoData.videoUrl ? detectVideoType(videoData.videoUrl) : 'Not detected'}
+                        disabled
+                        placeholder="Type will be auto-detected from URL..."
                       />
                     </div>
                   </div>
@@ -536,7 +453,10 @@ export default function ProblemEditor() {
                         color: themeColors.textPrimary
                       }}
                     >
-                      {JSON.stringify(videoData, null, 2)}
+                      {JSON.stringify({
+                        ...videoData,
+                        type: videoData.videoUrl ? detectVideoType(videoData.videoUrl) : 'not_detected'
+                      }, null, 2)}
                     </pre>
                   )}
                 </div>

@@ -5,14 +5,9 @@ export interface VideoContent {
   description: string;
   duration: string;
   videoUrl: string;
-  difficulty: 'beginner' | 'intermediate' | 'advanced';
   category: string;
-  type?: 'youtube' | 'custom';
-  url?: string; // For backward compatibility
-  presenter?: string;
-  presenterTitle?: string;
-  thumbnail?: string;
-  transcript?: string;
+  thumbnail: string;
+  type: 'youtube' | 'drm';
 }
 
 export interface VideoPlayerState {
