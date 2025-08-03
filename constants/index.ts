@@ -187,3 +187,135 @@ SELECT * FROM table_name;`,
     # Write your solution here
     return None`
 };
+
+// Mock Video Section Data
+export const MOCK_VIDEO_SECTION = {
+  id: "intro-typescript-video",
+  title: "Introduction to TypeScript",
+  description: "Learn the basics of TypeScript, its benefits over JavaScript, and how to get started with TypeScript development.",
+  duration: "15 min",
+  videoUrl: "https://example.com/videos/intro-typescript.mp4",
+  category: "Programming Languages",
+  thumbnail: "https://example.com/thumbnails/typescript-intro.jpg",
+  type: "not_detected"
+};
+
+export const MOCK_ADVANCED_VIDEO_SECTION = {
+  id: "typescript-generics-video",
+  title: "TypeScript Generics Deep Dive",
+  description: "Master TypeScript generics with practical examples and advanced use cases.",
+  duration: "25 min",
+  videoUrl: "https://example.com/videos/typescript-generics.mp4",
+  category: "Programming Languages",
+  thumbnail: "https://example.com/thumbnails/typescript-generics.jpg",
+  type: "not_detected"
+};
+
+// Mock API Responses for Sections
+export const MOCK_SECTION_RESPONSES = {
+  // Problem sections
+  "employee-sales-analytics": EMPLOYEE_SALES_LESSON,
+  
+  // Video sections
+  "intro-typescript-video": MOCK_VIDEO_SECTION,
+  "typescript-generics-video": MOCK_ADVANCED_VIDEO_SECTION,
+  
+  // Additional mock sections for testing
+  "sql-basics-problem": {
+    id: "sql-basics-problem",
+    title: "SQL Basics - SELECT Statements",
+    description: "Learn the fundamentals of SQL SELECT statements with practical exercises.",
+    difficulty: "easy",
+    tags: ["sql", "basics", "select"],
+    companies: ["Microsoft", "Oracle"],
+    category: "databases",
+    content: "This problem introduces you to SQL SELECT statements.",
+    examples: [
+      {
+        input: "Table: users\n| id | name | age |\n|----|------|-----|\n| 1  | John | 25  |\n| 2  | Jane | 30  |",
+        output: "| name | age |\n|------|-----|\n| John | 25  |\n| Jane | 30  |",
+        explanation: "Select name and age columns from users table."
+      }
+    ],
+    constraints: [
+      "Use standard SQL syntax",
+      "Return only name and age columns"
+    ],
+    hints: [
+      "Use SELECT statement to choose specific columns",
+      "FROM clause specifies the table name"
+    ],
+    starterCode: {
+      javascript: "",
+      python: "",
+      sql: "-- Write your SQL query here\nSELECT name, age FROM users;"
+    }
+  }
+};
+
+// Mock Courses with Section References
+export const MOCK_SAVED_COURSES = {
+  "typescript-fundamentals": {
+    id: "typescript-fundamentals",
+    title: "TypeScript Fundamentals",
+    description: "Complete guide to learning TypeScript from basics to advanced concepts.",
+    category: "Programming Languages",
+    thumbnail: "https://example.com/thumbnails/typescript-course.jpg",
+    status: "draft",
+    createdAt: "2025-08-01T10:00:00.000Z",
+    updatedAt: "2025-08-03T15:30:00.000Z",
+    version: 3,
+    modules: [
+      {
+        id: "module-1",
+        title: "Getting Started",
+        description: "Introduction to TypeScript and setup",
+        order: 1,
+        sections: [
+          {
+            id: "section-1-1",
+            title: "What is TypeScript?",
+            type: "video",
+            description: "Understanding TypeScript and its benefits",
+            duration: "15 min",
+            order: 1,
+            sectionId: "intro-typescript-video"
+          },
+          {
+            id: "section-1-2",
+            title: "Basic SQL Practice",
+            type: "problem",
+            description: "Practice basic SQL SELECT statements",
+            order: 2,
+            sectionId: "sql-basics-problem"
+          }
+        ]
+      },
+      {
+        id: "module-2",
+        title: "Advanced Concepts",
+        description: "Deep dive into advanced TypeScript features",
+        order: 2,
+        sections: [
+          {
+            id: "section-2-1",
+            title: "Generics Explained",
+            type: "video",
+            description: "Master TypeScript generics",
+            duration: "25 min",
+            order: 1,
+            sectionId: "typescript-generics-video"
+          },
+          {
+            id: "section-2-2",
+            title: "Advanced SQL Analytics",
+            type: "problem",
+            description: "Complex SQL with window functions",
+            order: 2,
+            sectionId: "employee-sales-analytics"
+          }
+        ]
+      }
+    ]
+  }
+};

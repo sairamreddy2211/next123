@@ -6,7 +6,6 @@ import remarkGfm from 'remark-gfm';
 import dynamic from "next/dynamic";
 import { useRouter, useSearchParams } from "next/navigation";
 import { useTheme } from '@/components/providers/ThemeProvider';
-import AdminNavigation from '@/components/admin/AdminNavigation';
 import { QuestionView } from '@/components/problem-solving/InteractiveLearningView';
 import TableMarkdownGenerator from '@/components/admin/TableMarkdownGenerator';
 import ProblemForm from '@/components/admin/ProblemForm';
@@ -15,6 +14,7 @@ import ExamplesEditor from '@/components/admin/ExamplesEditor';
 import ConstraintsEditor from '@/components/admin/ConstraintsEditor';
 import HintsEditor from '@/components/admin/HintsEditor';
 import CodeEditorSection from '@/components/admin/CodeEditorSection';
+import { mockApiCalls } from '@/lib/courseManager';
 
 // Dynamically import Markdown Editor (react-markdown-editor-lite)
 const MdEditor = dynamic(() => import('react-markdown-editor-lite'), { ssr: false });
@@ -86,6 +86,7 @@ export default function ProblemEditor() {
   const [selectedLang, setSelectedLang] = useState<LangType>('python');
   const [showHints, setShowHints] = useState(false);
   const [viewType, setViewType] = useState<'leetcode' | 'video'>(mode === 'video' ? 'video' : 'leetcode');
+  const [isSaving, setIsSaving] = useState(false);
   
   // Controlled code state for each language
   const [codeState, setCodeState] = useState<{ [K in LangType]: string }>({
@@ -145,42 +146,56 @@ export default function ProblemEditor() {
     return null;
   };
 
-  const saveToCourseEditor = () => {
+  const saveToCourseEditor = async () => {
     if (typeof window !== 'undefined') {
       const sectionData = getEditingSectionData();
       if (sectionData) {
-        const courseData = JSON.parse(localStorage.getItem('courseEditorData') || '{}');
+        setIsSaving(true);
         
-        // Update the section content
-        const updatedCourse = {
-          ...courseData,
-          modules: courseData.modules.map((module: any) =>
-            module.id === sectionData.moduleId
-              ? {
-                  ...module,
-                  sections: module.sections.map((section: any) =>
-                    section.id === sectionData.sectionId
-                      ? {
-                          ...section,
-                          content: viewType === 'video' ? videoData : problem
-                        }
-                      : section
-                  )
-                }
-              : module
-          )
-        };
-
-        localStorage.setItem('courseEditorData', JSON.stringify(updatedCourse));
-        router.push('/admin/course-editor');
+        try {
+          // Prepare data for API call
+          const dataToSave = viewType === 'video' ? {
+            ...videoData,
+            type: videoData.videoUrl ? detectVideoType(videoData.videoUrl) : 'not_detected'
+          } : problem;
+          
+          // Make API call to save section and get ID
+          const sectionId = await mockApiCalls.saveSection(
+            viewType === 'video' ? 'video' : 'problem', 
+            dataToSave
+          );
+          
+          console.log(`${viewType} section saved with ID:`, sectionId);
+          console.log('Section data:', JSON.stringify(dataToSave, null, 2));
+          
+          // Check if we're in a modal (course editor context)
+          const courseData = localStorage.getItem('courseEditorData');
+          if (courseData) {
+            // Trigger course editor save callback with section ID
+            window.postMessage({
+              type: 'SECTION_SAVED',
+              sectionId: sectionId,
+              moduleId: sectionData.moduleId,
+              targetSectionId: sectionData.sectionId
+            }, '*');
+          } else {
+            // Standalone mode - just show success
+            alert(`${viewType === 'video' ? 'Video' : 'Problem'} saved successfully!`);
+          }
+          
+        } catch (error) {
+          console.error('Failed to save section:', error);
+          alert('Failed to save section. Please try again.');
+        } finally {
+          setIsSaving(false);
+        }
       }
     }
   };
 
   return (
     <div className="min-h-screen text-white p-0" style={{ backgroundColor: themeColors.primary }}>
-      <AdminNavigation />
-      <div className="flex h-[calc(100vh-120px)]">
+      <div className="flex h-screen">
         {/* Left Panel: Live Preview (only for leetcode view) */}
         {viewType === 'leetcode' && (
           <div className="w-1/2 border-r overflow-y-auto p-6" style={{ 
@@ -236,8 +251,9 @@ export default function ProblemEditor() {
                     color: themeColors.textPrimary
                   }}
                   onClick={saveToCourseEditor}
+                  disabled={isSaving}
                 >
-                  Save to Course
+                  {isSaving ? 'Saving...' : `Save ${viewType === 'video' ? 'Video' : 'Problem'} Section`}
                 </button>
               )}
             </div>
