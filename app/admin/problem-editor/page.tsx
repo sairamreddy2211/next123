@@ -4,7 +4,9 @@ import { useState } from "react";
 import ReactMarkdown from 'react-markdown';
 import remarkGfm from 'remark-gfm';
 import dynamic from "next/dynamic";
+import { useRouter, useSearchParams } from "next/navigation";
 import { useTheme } from '@/components/providers/ThemeProvider';
+import AdminNavigation from '@/components/admin/AdminNavigation';
 import { QuestionView } from '@/components/problem-solving/InteractiveLearningView';
 import TableMarkdownGenerator from '@/components/admin/TableMarkdownGenerator';
 import ProblemForm from '@/components/admin/ProblemForm';
@@ -74,12 +76,16 @@ const defaultProblem: ProblemData = {
 
 export default function ProblemEditor() {
   const { themeColors } = useTheme();
+  const router = useRouter();
+  const searchParams = useSearchParams();
+  const mode = searchParams.get('mode');
+  
   const [problem, setProblem] = useState<ProblemData>(defaultProblem);
   const [jsonView, setJsonView] = useState(false);
   type LangType = 'python' | 'sql' | 'postgres';
   const [selectedLang, setSelectedLang] = useState<LangType>('python');
   const [showHints, setShowHints] = useState(false);
-  const [viewType, setViewType] = useState<'leetcode' | 'video'>('leetcode');
+  const [viewType, setViewType] = useState<'leetcode' | 'video'>(mode === 'video' ? 'video' : 'leetcode');
   
   // Controlled code state for each language
   const [codeState, setCodeState] = useState<{ [K in LangType]: string }>({
@@ -90,18 +96,12 @@ export default function ProblemEditor() {
 
   // Video form state
   const [videoData, setVideoData] = useState({
-    id: '',
     title: '',
     description: '',
     duration: '',
     videoUrl: '',
-    difficulty: 'beginner',
     category: '',
-    presenter: '',
-    presenterTitle: '',
-    type: 'youtube',
     thumbnail: '',
-    transcript: '',
   });
 
   const handleChange = (field: keyof ProblemData, value: any) => {
@@ -117,13 +117,70 @@ export default function ProblemEditor() {
     }
   };
 
+  // Function to detect video type from URL
+  const detectVideoType = (url: string): 'youtube' | 'drm' => {
+    if (url.includes('youtube.com') || url.includes('youtu.be')) {
+      return 'youtube';
+    }
+    return 'drm';
+  };
+
   const handleVideoChange = (field: string, value: any) => {
     setVideoData((prev) => ({ ...prev, [field]: value }));
   };
 
+  // Check if we're editing a section from course editor
+  const isEditingSection = () => {
+    if (typeof window !== 'undefined') {
+      return localStorage.getItem('editingSection') !== null;
+    }
+    return false;
+  };
+
+  const getEditingSectionData = () => {
+    if (typeof window !== 'undefined') {
+      const sectionData = localStorage.getItem('editingSection');
+      return sectionData ? JSON.parse(sectionData) : null;
+    }
+    return null;
+  };
+
+  const saveToCourseEditor = () => {
+    if (typeof window !== 'undefined') {
+      const sectionData = getEditingSectionData();
+      if (sectionData) {
+        const courseData = JSON.parse(localStorage.getItem('courseEditorData') || '{}');
+        
+        // Update the section content
+        const updatedCourse = {
+          ...courseData,
+          modules: courseData.modules.map((module: any) =>
+            module.id === sectionData.moduleId
+              ? {
+                  ...module,
+                  sections: module.sections.map((section: any) =>
+                    section.id === sectionData.sectionId
+                      ? {
+                          ...section,
+                          content: viewType === 'video' ? videoData : problem
+                        }
+                      : section
+                  )
+                }
+              : module
+          )
+        };
+
+        localStorage.setItem('courseEditorData', JSON.stringify(updatedCourse));
+        router.push('/admin/course-editor');
+      }
+    }
+  };
+
   return (
     <div className="min-h-screen text-white p-0" style={{ backgroundColor: themeColors.primary }}>
-      <div className="flex h-screen">
+      <AdminNavigation />
+      <div className="flex h-[calc(100vh-120px)]">
         {/* Left Panel: Live Preview (only for leetcode view) */}
         {viewType === 'leetcode' && (
           <div className="w-1/2 border-r overflow-y-auto p-6" style={{ 
@@ -163,12 +220,27 @@ export default function ProblemEditor() {
             {/* Table Markdown Generator Tool (only for leetcode) */}
             {viewType === 'leetcode' && <TableMarkdownGenerator />}
             
-            <h1 
-              className="text-2xl font-bold mb-4"
-              style={{ color: themeColors.textPrimary }}
-            >
-              Admin {viewType === 'leetcode' ? 'Problem Editor' : 'Video Editor'}
-            </h1>
+            <div className="flex justify-between items-center mb-4">
+              <h1 
+                className="text-2xl font-bold"
+                style={{ color: themeColors.textPrimary }}
+              >
+                Admin {viewType === 'leetcode' ? 'Problem Editor' : 'Video Editor'}
+              </h1>
+              
+              {isEditingSection() && (
+                <button
+                  className="px-4 py-2 rounded transition-colors"
+                  style={{
+                    backgroundColor: themeColors.accent,
+                    color: themeColors.textPrimary
+                  }}
+                  onClick={saveToCourseEditor}
+                >
+                  Save to Course
+                </button>
+              )}
+            </div>
             
             {/* LeetCode Problem Form */}
             {viewType === 'leetcode' && (
@@ -354,7 +426,6 @@ export default function ProblemEditor() {
                       description: videoData.description,
                       videoUrl: videoData.videoUrl,
                       duration: videoData.duration,
-                      level: videoData.difficulty,
                       thumbnailUrl: videoData.thumbnail
                     }}
                     onVideoDataChange={(data) => {
@@ -362,7 +433,6 @@ export default function ProblemEditor() {
                       handleVideoChange('description', data.description);
                       handleVideoChange('videoUrl', data.videoUrl);
                       handleVideoChange('duration', data.duration);
-                      handleVideoChange('difficulty', data.level);
                       handleVideoChange('thumbnail', data.thumbnailUrl);
                     }}
                   />
@@ -388,48 +458,6 @@ export default function ProblemEditor() {
                         className="block mb-1 font-semibold"
                         style={{ color: themeColors.textPrimary }}
                       >
-                        Video ID
-                      </label>
-                      <input
-                        className="w-full border rounded px-3 py-2"
-                        style={{
-                          backgroundColor: themeColors.tertiary,
-                          borderColor: themeColors.border,
-                          color: themeColors.textPrimary
-                        }}
-                        value={videoData.id}
-                        onChange={e => handleVideoChange('id', e.target.value)}
-                        placeholder="Enter video ID..."
-                      />
-                    </div>
-
-                    <div>
-                      <label 
-                        className="block mb-1 font-semibold"
-                        style={{ color: themeColors.textPrimary }}
-                      >
-                        Type
-                      </label>
-                      <select
-                        className="w-full border rounded px-3 py-2"
-                        style={{
-                          backgroundColor: themeColors.tertiary,
-                          borderColor: themeColors.border,
-                          color: themeColors.textPrimary
-                        }}
-                        value={videoData.type}
-                        onChange={e => handleVideoChange('type', e.target.value)}
-                      >
-                        <option value="youtube">YouTube</option>
-                        <option value="custom">Custom/DRM</option>
-                      </select>
-                    </div>
-
-                    <div>
-                      <label 
-                        className="block mb-1 font-semibold"
-                        style={{ color: themeColors.textPrimary }}
-                      >
                         Category
                       </label>
                       <input
@@ -450,7 +478,7 @@ export default function ProblemEditor() {
                         className="block mb-1 font-semibold"
                         style={{ color: themeColors.textPrimary }}
                       >
-                        Presenter
+                        Video Type (Auto-detected)
                       </label>
                       <input
                         className="w-full border rounded px-3 py-2"
@@ -459,50 +487,9 @@ export default function ProblemEditor() {
                           borderColor: themeColors.border,
                           color: themeColors.textPrimary
                         }}
-                        value={videoData.presenter}
-                        onChange={e => handleVideoChange('presenter', e.target.value)}
-                        placeholder="Enter presenter name..."
-                      />
-                    </div>
-
-                    <div className="md:col-span-2">
-                      <label 
-                        className="block mb-1 font-semibold"
-                        style={{ color: themeColors.textPrimary }}
-                      >
-                        Presenter Title
-                      </label>
-                      <input
-                        className="w-full border rounded px-3 py-2"
-                        style={{
-                          backgroundColor: themeColors.tertiary,
-                          borderColor: themeColors.border,
-                          color: themeColors.textPrimary
-                        }}
-                        value={videoData.presenterTitle}
-                        onChange={e => handleVideoChange('presenterTitle', e.target.value)}
-                        placeholder="Enter presenter title..."
-                      />
-                    </div>
-
-                    <div className="md:col-span-2">
-                      <label 
-                        className="block mb-1 font-semibold"
-                        style={{ color: themeColors.textPrimary }}
-                      >
-                        Transcript (Optional)
-                      </label>
-                      <textarea
-                        className="w-full border rounded px-3 py-2"
-                        style={{
-                          backgroundColor: themeColors.tertiary,
-                          borderColor: themeColors.border,
-                          color: themeColors.textPrimary
-                        }}
-                        rows={5}
-                        value={videoData.transcript}
-                        onChange={e => handleVideoChange('transcript', e.target.value)}
-                        placeholder="Enter video transcript..."
+                        value={videoData.videoUrl ? detectVideoType(videoData.videoUrl) : 'Not detected'}
+                        disabled
+                        placeholder="Type will be auto-detected from URL..."
                       />
                     </div>
                   </div>
@@ -536,7 +523,10 @@ export default function ProblemEditor() {
                         color: themeColors.textPrimary
                       }}
                     >
-                      {JSON.stringify(videoData, null, 2)}
+                      {JSON.stringify({
+                        ...videoData,
+                        type: videoData.videoUrl ? detectVideoType(videoData.videoUrl) : 'not_detected'
+                      }, null, 2)}
                     </pre>
                   )}
                 </div>

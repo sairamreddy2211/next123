@@ -14,11 +14,12 @@ export interface Course {
 export interface Video {
   id: string;
   title: string;
-  type: 'youtube' | 'custom';
-  url: string;
+  description: string;
   duration: string;
-  presenter: string;
-  presenterTitle: string;
+  videoUrl: string;
+  category: string;
+  thumbnail: string;
+  type: 'youtube' | 'drm';
 }
 
 export interface Step {
@@ -96,14 +97,9 @@ export interface VideoContent {
   description: string;
   duration: string;
   videoUrl: string;
-  difficulty: 'beginner' | 'intermediate' | 'advanced';
   category: string;
-  type?: 'youtube' | 'custom';
-  url?: string;
-  presenter?: string;
-  presenterTitle?: string;
-  thumbnail?: string;
-  transcript?: string;
+  thumbnail: string;
+  type: 'youtube' | 'drm';
 }
 
 export interface InteractiveLesson {

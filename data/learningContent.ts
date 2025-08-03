@@ -5,47 +5,52 @@ export const videoLessons: Video[] = [
   {
     id: 'sql-joins-fundamentals',
     title: 'SQL Joins Fundamentals',
-    type: 'youtube',
-    url: 'https://www.youtube.com/embed/9yeOJ0ZMUYw',
+    description: 'Learn the fundamentals of SQL joins including INNER, LEFT, RIGHT, and FULL joins with practical examples.',
     duration: '15:30',
-    presenter: 'Maham Faisal Khan',
-    presenterTitle: 'Senior Content Developer, DataCamp'
+    videoUrl: 'https://www.youtube.com/embed/9yeOJ0ZMUYw',
+    category: 'databases',
+    thumbnail: 'https://img.youtube.com/vi/9yeOJ0ZMUYw/maxresdefault.jpg',
+    type: 'youtube'
   },
   {
     id: 'database-design-principles',
     title: 'Database Design Principles',
-    type: 'youtube',
-    url: 'https://www.youtube.com/embed/ztHopE5Wnpc',
+    description: 'Master the core principles of database design including normalization, relationships, and best practices.',
     duration: '12:45',
-    presenter: 'Alex Johnson',
-    presenterTitle: 'Database Architect, TechCorp'
+    videoUrl: 'https://www.youtube.com/embed/ztHopE5Wnpc',
+    category: 'databases',
+    thumbnail: 'https://img.youtube.com/vi/ztHopE5Wnpc/maxresdefault.jpg',
+    type: 'youtube'
   },
   {
     id: 'advanced-sql-tutorial',
     title: 'Advanced SQL Tutorial',
-    type: 'custom',
-    url: '/video/advanced-sql.mp4',
+    description: 'Deep dive into advanced SQL concepts including window functions, CTEs, and complex queries.',
     duration: '10:30',
-    presenter: 'Sarah Mitchell',
-    presenterTitle: 'SQL Expert & Instructor'
+    videoUrl: '/video/advanced-sql.mp4',
+    category: 'databases',
+    thumbnail: '/thumbnails/advanced-sql.jpg',
+    type: 'drm'
   },
   {
     id: 'performance-optimization',
     title: 'SQL Performance Optimization',
-    type: 'custom',
-    url: '/video/sql-performance.mp4',
+    description: 'Learn techniques to optimize SQL queries for better performance and efficiency.',
     duration: '15:45',
-    presenter: 'Michael Chen',
-    presenterTitle: 'Database Performance Engineer'
+    videoUrl: '/video/sql-performance.mp4',
+    category: 'databases',
+    thumbnail: '/thumbnails/sql-performance.jpg',
+    type: 'drm'
   },
   {
     id: 'query-optimization-masterclass',
     title: 'Query Optimization Masterclass',
-    type: 'youtube',
-    url: 'https://www.youtube.com/embed/7S_tz1z_5bA',
+    description: 'Master the art of query optimization with real-world examples and performance tuning strategies.',
     duration: '20:10',
-    presenter: 'Emily Watson',
-    presenterTitle: 'Performance Engineer, QueryMaster'
+    videoUrl: 'https://www.youtube.com/embed/7S_tz1z_5bA',
+    category: 'databases',
+    thumbnail: 'https://img.youtube.com/vi/7S_tz1z_5bA/maxresdefault.jpg',
+    type: 'youtube'
   }
 ];
 
@@ -59,8 +64,19 @@ export const learningContent: LearningContent = {
       description: 'Learn the fundamentals of database design and SQL.',
       duration: '15 min',
       videoUrl: 'https://www.youtube.com/embed/p2zMXSXhZ9M',
-      difficulty: 'beginner',
-      category: 'databases'
+      category: 'databases',
+      thumbnail: 'https://img.youtube.com/vi/p2zMXSXhZ9M/maxresdefault.jpg',
+      type: 'youtube'
+    },
+    {
+      id: 'video-2',
+      title: 'Advanced SQL Techniques',
+      description: 'Master advanced SQL concepts including window functions and complex queries.',
+      duration: '20 min',
+      videoUrl: 'https://www.youtube.com/watch?v=KKKBaaxH_Jk&list=RDKKKBaaxH_Jk&start_radio=1',
+      category: 'databases',
+      thumbnail: 'https://img.youtube.com/vi/KKKBaaxH_Jk/maxresdefault.jpg',
+      type: 'youtube'
     },
   ],
   interactiveLessons: [
