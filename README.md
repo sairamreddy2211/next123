@@ -1,4 +1,4 @@
-# Next123 - Interactive Learning Platform
+# PipeCode Admin - Interactive Learning Platform
 
 A modern Next.js learning platform that provides interactive coding experiences with problem-solving, video learning, and comprehensive course management tools for educators and administrators.
 
@@ -496,3 +496,4 @@ The current system provides a solid foundation for:
 - Advanced content types (quizzes, assignments)
 - Progress tracking and analytics
 - Collaborative course creation
+# pipecode-admin
